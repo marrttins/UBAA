@@ -1,0 +1,21 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /ubaa/
+
+    # 1. Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # 2. If the request is for a physical file that exists in the root, serve it
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # 3. If the request matches a physical file in the public directory, serve it
+    # This ensures that assets like /ubaa/images/logo.png are found in /ubaa/public/images/logo.png
+    RewriteCond %{DOCUMENT_ROOT}/ubaa/public/$1 -f
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # 4. For all other requests (routes), send them to the root gateway index.php
+    # This allows Laravel to correctly identify the base path as /ubaa and match routes like /membership
+    RewriteRule ^ index.php [L]
+</IfModule>
