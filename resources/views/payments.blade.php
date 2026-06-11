@@ -155,12 +155,14 @@
             </a>
         </div>
         <div class="flex items-center gap-4">
-            <a href="{{ route('notifications') }}" class="text-primary text-xl relative">
-                <i class="fa-solid fa-bell"></i>
-                @if(auth()->user()->unreadNotifications->count() > 0)
-                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                @endif
-            </a>
+            <a href="{{ route('notifications') }}" class="relative text-primary text-xl">
+            <i class="fa-solid fa-bell"></i>
+            @if(auth()->user()->unreadNotifications->count() > 0)
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white animation-pulse">
+                {{ auth()->user()->unreadNotifications->count() }}
+            </span>
+            @endif
+        </a>
         </div>
     </header>
 
@@ -169,6 +171,26 @@
 
     <!-- Main Content -->
     <main class="main-content mb-24 lg:mb-0">
+        @if(request()->has('amount') && request()->has('purpose'))
+        <section class="mb-8">
+            <div class="bg-gradient-to-r from-amber-500 to-orange-600 p-8 rounded-[32px] text-white shadow-xl relative overflow-hidden">
+                <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2 block">Pending Event Payment</span>
+                        <h3 class="text-2xl font-black mb-2">{{ request('purpose') }}</h3>
+                        <p class="text-sm text-white/80">Complete your registration by paying the entry fee.</p>
+                    </div>
+                    <div>
+                        <button onclick="payWithFlutterwave({{ (float)request('amount') }}, '{{ request('purpose') }}')" class="bg-white text-orange-600 font-bold px-8 py-4 rounded-2xl shadow-lg hover:bg-gray-50 transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-credit-card"></i> Pay ₦{{ number_format(request('amount'), 2) }}
+                        </button>
+                    </div>
+                </div>
+                <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
+            </div>
+        </section>
+        @endif
+
         <!-- Summary Cards -->
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
             <div class="lg:col-span-2 bg-gradient-to-br from-primary to-primary-light p-8 rounded-[32px] text-white relative overflow-hidden shadow-xl">
@@ -282,14 +304,28 @@
 <script>
   function payWithFlutterwave(amount, paymentFor) {
     FlutterwaveCheckout({
-      public_key: "FLWPUBK_TEST-SANDBOXDEMOKEY-X",
+      public_key: "{{ config('services.flutterwave.public_key') }}",
       tx_ref: "ALUM_PAY_" + Date.now(),
       amount: amount,
       currency: "NGN",
       customer: { email: "{{ auth()->user()->email }}", name: "{{ auth()->user()->name }}" },
       callback: function (data) {
-        alert("Payment Successful!");
-        document.getElementById('duesModal').classList.add('hidden');
+        fetch('{{ route('payment.record') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                amount: amount,
+                reference: data.transaction_id || data.tx_ref,
+                description: paymentFor
+            })
+        }).then(res => res.json()).then(() => {
+            alert("Payment of ₦" + amount.toLocaleString() + " for " + paymentFor + " was successful!");
+            document.getElementById('duesModal').classList.add('hidden');
+            window.location.reload();
+        });
       }
     });
   }

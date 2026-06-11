@@ -10,8 +10,8 @@
         </a>
     </div>
 
-    <div class="bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden">
-        <div class="p-10 border-b border-gray-50 flex items-center gap-6 bg-gray-50 bg-opacity-30">
+    <div class="bg-white rounded-[24px] md:rounded-[32px] shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-6 md:p-10 border-b border-gray-50 flex flex-col sm:flex-row items-center text-center sm:text-left gap-4 sm:gap-6 bg-gray-50 bg-opacity-30">
             @if($user->avatar_url)
                 <img class="h-20 w-20 rounded-[24px] object-cover shadow-md border-4 border-white" src="{{ asset($user->avatar_url) }}" alt="">
             @else
@@ -25,7 +25,7 @@
             </div>
         </div>
 
-        <form action="{{ route('admin.users.update', $user) }}" method="POST" class="p-10">
+        <form action="{{ route('admin.users.update', $user) }}" method="POST" class="p-6 md:p-10">
             @csrf
             
             <!-- Section: Personal Information -->
@@ -164,11 +164,11 @@
                 </div>
             </div>
             
-            <div class="flex items-center gap-4 border-t border-gray-50 pt-10">
-                <button type="submit" class="bg-[var(--primary)] text-white py-4 px-12 rounded-2xl font-bold hover:bg-[var(--primary-dark)] transition-all shadow-lg shadow-purple-100 flex items-center gap-3">
+            <div class="flex flex-col sm:flex-row items-center gap-4 border-t border-gray-50 pt-10">
+                <button type="submit" class="w-full sm:w-auto bg-[var(--primary)] text-white py-4 px-12 rounded-2xl font-bold hover:bg-[var(--primary-dark)] transition-all shadow-lg shadow-purple-100 flex items-center justify-center gap-3">
                     <i class="fas fa-check-circle text-xs"></i> Update Member Record
                 </button>
-                <a href="{{ $user->role === 'user' ? route('admin.users') : route('admin.executives') }}" class="text-gray-400 font-bold hover:text-gray-600 transition-colors px-6">Discard Changes</a>
+                <a href="{{ $user->role === 'user' ? route('admin.users') : route('admin.executives') }}" class="w-full sm:w-auto text-center text-gray-400 font-bold hover:text-gray-600 transition-colors py-3 px-6">Discard Changes</a>
             </div>
         </form>
     </div>

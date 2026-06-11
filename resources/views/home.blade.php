@@ -230,6 +230,142 @@
     @media (min-width: 768px) {
         .news-card-body { padding: 24px; }
     }
+
+    /* Cooperative & Real Estate Section Custom Styles */
+    .coop-section {
+        padding: 100px 0;
+        background: #fafafa;
+        position: relative;
+    }
+    .coop-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 50px;
+        align-items: center;
+    }
+    @media (min-width: 1024px) {
+        .coop-grid {
+            grid-template-columns: 1.2fr 0.8fr;
+        }
+    }
+    .coop-text-block {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        text-align: left;
+    }
+    .coop-description {
+        color: var(--text-gray);
+        font-size: 16px;
+        line-height: 1.8;
+    }
+    .coop-cards-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+        margin-top: 16px;
+    }
+    @media (min-width: 640px) {
+        .coop-cards-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+    .coop-card {
+        background: white;
+        padding: 30px;
+        border-radius: 24px;
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .coop-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(74, 14, 78, 0.08);
+        border-color: var(--primary);
+    }
+    .coop-card-icon {
+        width: 50px;
+        height: 50px;
+        background: rgba(74, 14, 78, 0.05);
+        color: var(--primary);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        transition: all 0.3s ease;
+    }
+    .coop-card:hover .coop-card-icon {
+        background: var(--primary);
+        color: white;
+    }
+    .coop-card-title {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--primary);
+    }
+    .coop-specs-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .coop-spec-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        color: var(--text-dark);
+        font-weight: 600;
+    }
+    .coop-spec-item i {
+        color: var(--secondary);
+    }
+    .coop-image-container {
+        position: relative;
+        border-radius: 40px;
+        overflow: hidden;
+        box-shadow: 0 20px 45px rgba(0,0,0,0.12);
+        aspect-ratio: 4/3;
+    }
+    .coop-image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .coop-image-container:hover img {
+        transform: scale(1.05);
+    }
+    .coop-image-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(74, 14, 78, 0.9), transparent 60%);
+        display: flex;
+        align-items: flex-end;
+        padding: 30px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .coop-image-container:hover .coop-image-overlay {
+        opacity: 1;
+    }
+    .coop-image-text {
+        color: white;
+        font-weight: 800;
+        font-size: 18px;
+    }
+    .coop-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 16px;
+    }
 </style>
 @endsection
 
@@ -519,59 +655,54 @@
 </section>
 
 <!-- Cooperative & Real Estate Section -->
-<section id="cooperative" class="py-20" style="background: #fafafa;">
+<section id="cooperative" class="coop-section">
     <div class="container">
-        <div class="grid lg:grid-cols-2 gap-16 items-center">
-            <div class="space-y-8 order-2 lg:order-1">
+        <div class="coop-grid">
+            <div class="coop-text-block">
                 <div>
                     <span class="section-tag">Collective Wealth</span>
-                    <h2 class="section-title" style="margin-bottom: 24px;">{{ $cooperative->title ?? 'Multi-Purpose Cooperative Society' }}</h2>
-                    <p class="text-gray-500 text-lg leading-relaxed mb-8">
-                        {{ $cooperative->description ?? 'The UBAA Lagos Cooperative is the engine of financial empowerment for our members. By pooling resources, we provide access to high-value investments that were once out of reach.' }}
+                    <h2 class="section-title" style="margin-bottom: 24px;">{{ $cooperative->title ?? 'Uniben Alumni Cooperative Estate' }}</h2>
+                    <p class="coop-description">
+                        {{ $cooperative->description ?? 'Secure your family’s future with the premier residential estate scheme by the UNIBEN Alumni Lagos Cooperative Society. Located in a high-growth corridor at Idi-Obi, Arapagi, Bogije axis of Lagos State, this planned community offers comfort, safety, and shared prosperity.' }}
                     </p>
                 </div>
 
-                <div class="grid sm:grid-cols-2 gap-8">
-                    @if($cooperative && $cooperative->benefits)
-                        @foreach(explode("\n", $cooperative->benefits) as $index => $benefit)
-                            @php if($index > 1) break; @endphp
-                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 group hover:border-primary transition-all">
-                                <div class="w-12 h-12 {{ $index % 2 == 0 ? 'bg-primary/5 text-primary' : 'bg-secondary/5 text-secondary' }} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                    <i class="fa-solid {{ $index % 2 == 0 ? 'fa-house-circle-check' : 'fa-coins' }}"></i>
-                                </div>
-                                <p class="text-sm text-gray-700 font-bold leading-tight">{{ $benefit }}</p>
-                            </div>
-                        @endforeach
-                    @else
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 group hover:border-primary transition-all">
-                            <div class="w-12 h-12 bg-primary/5 rounded-xl flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
-                                <i class="fa-solid fa-house-circle-check"></i>
-                            </div>
-                            <h5 class="text-primary font-bold mb-2">Uniben Estate Phase 1</h5>
-                            <p class="text-xs text-gray-400 font-medium">Located at Ibeju-Lekki. Own a piece of the future Lagos with exclusive alumni discounts.</p>
-                        </div>
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 group hover:border-primary transition-all">
-                            <div class="w-12 h-12 bg-secondary/5 rounded-xl flex items-center justify-center text-secondary mb-4 group-hover:bg-secondary group-hover:text-white transition-colors">
-                                <i class="fa-solid fa-coins"></i>
-                            </div>
-                            <h5 class="text-primary font-bold mb-2">Thrift & Credit</h5>
-                            <p class="text-xs text-gray-400 font-medium">Access low-interest loans up to 3x your savings, processed within 48 hours for active members.</p>
-                        </div>
-                    @endif
+                <div class="coop-cards-grid">
+                    <!-- Card 1: Estate Details -->
+                    <div class="coop-card">
+                        <div class="coop-card-icon"><i class="fa-solid fa-house-circle-check"></i></div>
+                        <h4 class="coop-card-title">Cooperative Estate Scheme</h4>
+                        <ul class="coop-specs-list">
+                            <li class="coop-spec-item"><i class="fa-solid fa-map-pin"></i> Idi-Obi, Arapagi, Bogije axis, Lagos</li>
+                            <li class="coop-spec-item"><i class="fa-solid fa-maximize"></i> 500sqm per plot size</li>
+                            <li class="coop-spec-item"><i class="fa-solid fa-shield-halved"></i> Global C of O & Deed included</li>
+                            <li class="coop-spec-item"><i class="fa-solid fa-tags"></i> ₦10,000,000 per plot</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Card 2: Investment Features -->
+                    <div class="coop-card">
+                        <div class="coop-card-icon"><i class="fa-solid fa-coins"></i></div>
+                        <h4 class="coop-card-title">Payment & Accessibility</h4>
+                        <ul class="coop-specs-list">
+                            <li class="coop-spec-item"><i class="fa-solid fa-calendar-days"></i> 3-6 Months installments</li>
+                            <li class="coop-spec-item"><i class="fa-solid fa-credit-card"></i> 30% initial deposit</li>
+                            <li class="coop-spec-item"><i class="fa-solid fa-road"></i> Direct Sangotedo link road</li>
+                            <li class="coop-spec-item"><i class="fa-solid fa-ship"></i> Waterways ferry transport access</li>
+                        </ul>
+                    </div>
                 </div>
 
-                <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                <div class="coop-actions">
                     <a href="{{ route('cooperative') }}" class="btn btn-primary px-10">Learn More <i class="fa-solid fa-users-gear"></i></a>
-                    <a href="{{ $cooperative->application_link ?? '#' }}" class="btn btn-outline border-gray-200">Join Society</a>
+                    <a href="{{ $cooperative->application_link ?? route('cooperative') }}" class="btn btn-outline">Join Society / Apply</a>
                 </div>
             </div>
 
-            <div class="order-1 lg:order-2">
-                <div class="rounded-[40px] overflow-hidden shadow-2xl relative group">
-                    <img src="{{ $cooperative && $cooperative->image_url ? asset($cooperative->image_url) : asset('images/land.jpeg') }}" class="w-full h-[400px] object-cover group-hover:scale-105 transition-transform duration-700">
-                    <div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent flex items-end p-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <p class="text-white font-bold">{{ $cooperative->title ?? 'UBAA Cooperative' }}</p>
-                    </div>
+            <div class="coop-image-container">
+                <img src="{{ $cooperative && $cooperative->image_url ? asset($cooperative->image_url) : asset('images/land.jpeg') }}" alt="Cooperative Estate">
+                <div class="coop-image-overlay">
+                    <p class="coop-image-text">{{ $cooperative->title ?? 'Uniben Alumni Cooperative Estate' }}</p>
                 </div>
             </div>
         </div>

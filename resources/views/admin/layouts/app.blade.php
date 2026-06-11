@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel | UBAA Lagos</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/uniben-logo.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -24,15 +25,23 @@
     @yield('extra_css')
 </head>
 <body class="text-gray-800 antialiased">
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-screen overflow-hidden relative">
+        <!-- Sidebar Backdrop -->
+        <div id="sidebarBackdrop" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity duration-300"></div>
+
         <!-- Sidebar -->
-        <aside class="sidebar w-64 hidden md:flex flex-col flex-shrink-0 text-white shadow-2xl z-20">
-            <div class="p-8 flex items-center gap-3">
-                <img src="{{ asset('images/uniben-logo.png') }}" class="w-10 h-10 bg-white rounded-lg p-1 shadow-lg" alt="Logo">
-                <div>
-                    <h1 class="text-xl font-extrabold tracking-tight">UBAA <span class="text-[var(--secondary)]">ADMIN</span></h1>
-                    <p class="text-[10px] uppercase tracking-widest text-purple-300 font-bold opacity-70">Lagos Branch</p>
+        <aside id="adminSidebar" class="sidebar w-64 fixed inset-y-0 left-0 transform -translate-x-full md:translate-x-0 md:relative transition-transform duration-300 ease-in-out flex flex-col flex-shrink-0 text-white shadow-2xl z-50">
+            <div class="p-8 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <img src="{{ asset('images/uniben-logo.png') }}" class="w-10 h-10 bg-white rounded-lg p-1 shadow-lg" alt="Logo">
+                    <div>
+                        <h1 class="text-xl font-extrabold tracking-tight">UBAA <span class="text-[var(--secondary)]">ADMIN</span></h1>
+                        <p class="text-[10px] uppercase tracking-widest text-purple-300 font-bold opacity-70">Lagos Branch</p>
+                    </div>
                 </div>
+                <button id="sidebarClose" class="md:hidden text-white hover:text-[var(--secondary)] text-xl focus:outline-none" aria-label="Close sidebar">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
 
             <div class="px-6 mb-6">
@@ -131,20 +140,20 @@
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden bg-[var(--bg-body)]">
             <!-- Header -->
-            <header class="bg-white h-20 flex items-center justify-between px-8 border-b border-gray-200">
+            <header class="bg-white h-20 flex items-center justify-between px-4 md:px-8 border-b border-gray-200">
                 <div class="flex items-center gap-4">
-                    <button class="md:hidden text-[var(--primary)] text-2xl">
+                    <button id="sidebarToggle" class="md:hidden text-[var(--primary)] text-2xl focus:outline-none" aria-label="Open menu">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h2 class="text-xl font-bold text-gray-800">@yield('title', 'Admin Overview')</h2>
+                    <h2 class="text-lg md:text-xl font-bold text-gray-800">@yield('title', 'Admin Overview')</h2>
                 </div>
                 
-                <div class="flex items-center gap-6">
+                <div class="flex items-center gap-4 md:gap-6">
                     <div class="hidden lg:flex items-center gap-2 text-sm text-gray-500 font-medium">
                         <i class="fas fa-clock text-[var(--primary)] opacity-50"></i>
                         <span>{{ now()->format('l, jS M Y') }}</span>
                     </div>
-                    <div class="h-8 w-[1px] bg-gray-200"></div>
+                    <div class="hidden lg:block h-8 w-[1px] bg-gray-200"></div>
                     <a href="{{ route('home') }}" target="_blank" class="text-sm font-bold text-[var(--primary)] hover:text-[var(--primary-dark)] flex items-center gap-2 transition-all">
                         <span>Visit Site</span>
                         <i class="fas fa-external-link-alt text-[10px]"></i>
@@ -153,7 +162,7 @@
             </header>
             
             <!-- Content -->
-            <main class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <main class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
                 @if(session('success'))
                     <div class="mb-8 flex items-center gap-4 bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-2xl shadow-sm animate-fade-in">
                         <i class="fas fa-check-circle text-xl"></i>
@@ -180,5 +189,36 @@
         </div>
     </div>
 @yield('extra_js')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('adminSidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const closeBtn = document.getElementById('sidebarClose');
+
+        function toggleSidebar() {
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+            if (isOpen) {
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            } else {
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+        }
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', toggleSidebar);
+        }
+        if (backdrop) {
+            backdrop.addEventListener('click', toggleSidebar);
+        }
+        if (closeBtn) {
+            closeBtn.addEventListener('click', toggleSidebar);
+        }
+    });
+</script>
 </body>
 </html>

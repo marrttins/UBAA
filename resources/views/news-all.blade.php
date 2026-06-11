@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alumni News | UNIBEN Alumni Lagos</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/uniben-logo.png') }}">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -151,7 +152,14 @@
             <img src="{{ asset('images/uniben-logo.png') }}" class="w-9 h-9 rounded-full bg-black p-0.5 object-contain">
             <span class="text-primary font-bold">Alumni News</span>
         </div>
-        <button class="text-primary text-xl"><i class="fa-solid fa-bell"></i></button>
+        <a href="{{ route('notifications') }}" class="relative text-primary text-xl">
+            <i class="fa-solid fa-bell"></i>
+            @if(auth()->user()->unreadNotifications->count() > 0)
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white animation-pulse">
+                {{ auth()->user()->unreadNotifications->count() }}
+            </span>
+            @endif
+        </a>
     </header>
 
     <!-- Sidebar -->

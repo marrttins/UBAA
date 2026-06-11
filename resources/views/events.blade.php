@@ -5,6 +5,7 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Events | UNIBEN Alumni Lagos</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/uniben-logo.png') }}">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -160,10 +161,14 @@
             <img src="{{ asset('images/uniben-logo.png') }}" alt="Logo" class="w-9 h-9 rounded-full border border-gray-100 bg-black p-0.5 object-contain">
             <span class="text-primary font-bold text-base">UNIBEN Alumni <small class="text-[10px] text-secondary block -mt-1">Lagos Branch</small></span>
         </div>
-        <button class="text-primary text-xl relative">
+        <a href="{{ route('notifications') }}" class="relative text-primary text-xl">
             <i class="fa-solid fa-bell"></i>
-            <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-        </button>
+            @if(auth()->user()->unreadNotifications->count() > 0)
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white animation-pulse">
+                {{ auth()->user()->unreadNotifications->count() }}
+            </span>
+            @endif
+        </a>
     </header>
 
     <!-- Sidebar (PC) -->

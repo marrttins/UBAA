@@ -158,7 +158,14 @@
                 <span class="material-symbols-outlined text-primary">shopping_bag</span>
                 <span id="cartCountBadge" class="absolute -top-1 -right-1 bg-secondary text-primary text-[9px] font-black h-4 w-4 flex items-center justify-center rounded-full">0</span>
             </div>
-            <button class="text-primary text-xl"><i class="fa-solid fa-bell"></i></button>
+            <a href="{{ route('notifications') }}" class="relative text-primary text-xl">
+            <i class="fa-solid fa-bell"></i>
+            @if(auth()->user()->unreadNotifications->count() > 0)
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white animation-pulse">
+                {{ auth()->user()->unreadNotifications->count() }}
+            </span>
+            @endif
+        </a>
         </div>
     </header>
 
@@ -466,7 +473,7 @@
 
         const ref = "ALUM_SHP_" + Date.now();
         FlutterwaveCheckout({
-            public_key: "FLWPUBK_TEST-SANDBOXDEMOKEY-X",
+            public_key: "{{ config('services.flutterwave.public_key') }}",
             tx_ref: ref,
             amount: totalAmount,
             currency: "NGN",
@@ -478,7 +485,7 @@
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                     body: JSON.stringify({ 
                         amount: totalAmount, 
-                        reference: data.transaction_id, 
+                        reference: data.transaction_id || data.tx_ref || ref, 
                         items: cart.map(i => `${i.title} (${i.size || 'No Size'}) x${i.quantity}`).join(', '),
                         delivery_mode: deliveryMode,
                         delivery_address: document.getElementById('deliveryAddress').value,

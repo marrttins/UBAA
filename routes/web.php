@@ -27,6 +27,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
     Route::get('/signup', [AuthController::class, 'showSignup'])->name('signup');
     Route::post('/signup', [AuthController::class, 'signup'])->name('signup.post');
+    Route::get('/signup/verify', [AuthController::class, 'showVerifyOtp'])->name('signup.verify');
+    Route::post('/signup/verify', [AuthController::class, 'verifyOtp'])->name('signup.verify.post');
+    Route::post('/signup/resend-otp', [AuthController::class, 'resendOtp'])->name('signup.resend_otp');
     Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('forgot.password');
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot.password.post');
 });
@@ -272,6 +275,36 @@ Route::middleware('auth')->group(function () {
         return view('payments', compact('payments', 'currentYear', 'duesPaidThisYear', 'totalDues', 'remainingDues'));
     })->name('payments');
 
+    Route::post('/payment/record', function (\Illuminate\Http\Request $request) {
+        $request->validate([
+            'amount' => 'required|numeric',
+            'reference' => 'required|string',
+            'description' => 'required|string',
+        ]);
+
+        \App\Models\Payment::create([
+            'user_id' => auth()->id(),
+            'reference' => $request->reference,
+            'description' => $request->description,
+            'amount' => $request->amount,
+            'status' => 'Paid'
+        ]);
+
+        // If it's a donation, update raising amount on the project if applicable
+        if (str_contains(strtolower($request->description), 'donation') || str_contains(strtolower($request->description), 'project')) {
+            $parts = explode(':', $request->description);
+            if (count($parts) > 1) {
+                $projectTitle = trim($parts[1]);
+                $project = \App\Models\DonationProject::where('title', $projectTitle)->first();
+                if ($project) {
+                    $project->increment('raised_amount', $request->amount);
+                }
+            }
+        }
+
+        return response()->json(['success' => true]);
+    })->name('payment.record');
+
     Route::get('/transactions', function () {
         $payments = \App\Models\Payment::where('user_id', auth()->id())->latest()->get();
         return view('transactions', compact('payments'));
@@ -368,6 +401,16 @@ Route::middleware('auth')->group(function () {
             'status' => 'confirmed',
             'payment_method' => $event->fee > 0 ? 'payment_gateway' : 'free',
         ]);
+
+        if ($event->fee > 0) {
+            \App\Models\Payment::create([
+                'user_id' => auth()->id(),
+                'reference' => $request->payment_reference ?? ('EVT_' . time() . '_' . $reservation->id),
+                'description' => 'Event Ticket: ' . $event->title,
+                'amount' => $event->fee,
+                'status' => 'Paid'
+            ]);
+        }
 
         \Illuminate\Support\Facades\Mail::to($request->email)->send(new \App\Mail\EventReservationMail($reservation, $event));
 

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Support a Cause | UNIBEN Alumni Lagos</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/uniben-logo.png') }}">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -170,7 +171,7 @@
         <a href="{{ route('notifications') }}" class="relative text-primary text-xl">
             <i class="fa-solid fa-bell"></i>
             @if(auth()->user()->unreadNotifications->count() > 0)
-            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white">
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white animation-pulse">
                 {{ auth()->user()->unreadNotifications->count() }}
             </span>
             @endif
@@ -298,22 +299,19 @@
     const project = projectRadio.value;
     
     FlutterwaveCheckout({
-      public_key: "FLWPUBK_TEST-SANDBOXDEMOKEY-X",
+      public_key: "{{ config('services.flutterwave.public_key') }}",
       tx_ref: "DONATION_" + Date.now(),
       amount: amount,
       currency: "NGN",
       customer: { email: "{{ auth()->user()->email }}", name: "{{ auth()->user()->name }}" },
       callback: function (data) {
-        fetch('{{ route('shop.checkout') }}', {
+        fetch('{{ route('payment.record') }}', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
             body: JSON.stringify({ 
                 amount: amount, 
-                reference: data.transaction_id, 
-                items: 'Donation: ' + project,
-                delivery_mode: 'none',
-                delivery_address: '',
-                delivery_phone: ''
+                reference: data.transaction_id || data.tx_ref, 
+                description: 'Donation: ' + project
             })
         }).then(() => {
             alert("Thank you for your generous donation to " + project + "!");

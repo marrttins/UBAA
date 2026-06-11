@@ -182,7 +182,14 @@
             <img src="{{ asset('images/uniben-logo.png') }}" class="w-9 h-9 rounded-full bg-black p-0.5 object-contain">
             <span class="text-primary font-bold">Edit Profile</span>
         </div>
-        <button class="text-primary text-xl"><i class="fa-solid fa-bell"></i></button>
+        <a href="{{ route('notifications') }}" class="relative text-primary text-xl">
+            <i class="fa-solid fa-bell"></i>
+            @if(auth()->user()->unreadNotifications->count() > 0)
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white animation-pulse">
+                {{ auth()->user()->unreadNotifications->count() }}
+            </span>
+            @endif
+        </a>
     </header>
 
     <!-- Sidebar -->

@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $event->title }} | UNIBEN Alumni Lagos</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/uniben-logo.png') }}">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
@@ -198,7 +199,14 @@
                     <span class="text-primary font-bold">Event Details</span>
                 </div>
             </div>
-            <button class="text-primary text-xl"><i class="fa-solid fa-bell"></i></button>
+            <a href="{{ route('notifications') }}" class="relative text-primary text-xl">
+            <i class="fa-solid fa-bell"></i>
+            @if(auth()->user()->unreadNotifications->count() > 0)
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white animation-pulse">
+                {{ auth()->user()->unreadNotifications->count() }}
+            </span>
+            @endif
+        </a>
         </header>
 
         <!-- Sidebar -->
@@ -274,10 +282,8 @@
                             </div>
                         @endif
 
-                        <form action="{{ $event->fee > 0 ? route('payments') : route('events.rsvp', $event) }}" method="{{ $event->fee > 0 ? 'GET' : 'POST' }}">
-                            @if(!$event->fee || $event->fee <= 0)
-                                @csrf
-                            @endif
+                        <form id="rsvpForm" action="{{ route('events.rsvp', $event) }}" method="POST">
+                            @csrf
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
@@ -295,11 +301,9 @@
                             </div>
 
                             @if($event->fee > 0)
-                                <input type="hidden" name="purpose" value="Event Ticket: {{ $event->title }}">
-                                <input type="hidden" name="amount" value="{{ $event->fee }}">
                                 <div class="mb-4">
                                     <p class="text-sm font-bold text-gray-700">Ticket Price: ₦{{ number_format($event->fee, 0) }}</p>
-                                    <p class="text-xs text-gray-500">You will be redirected to the payment gateway to complete your reservation.</p>
+                                    <p class="text-xs text-gray-500">Secure transaction powered by Flutterwave. Pay to complete reservation.</p>
                                 </div>
                             @else
                                 <div class="mb-4">
@@ -319,6 +323,44 @@
         <!-- Mobile Bottom Nav -->
         @include('layouts.bottom-nav')
     </div>
+
+<script src="https://checkout.flutterwave.com/v3.js"></script>
+<script>
+    const fee = {{ $event->fee ?? 0 }};
+    if (fee > 0) {
+        const rsvpForm = document.getElementById('rsvpForm');
+        rsvpForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = rsvpForm.querySelector('input[name="name"]').value;
+            const email = rsvpForm.querySelector('input[name="email"]').value;
+            const phone = rsvpForm.querySelector('input[name="phone"]').value;
+            
+            FlutterwaveCheckout({
+                public_key: "{{ config('services.flutterwave.public_key') }}",
+                tx_ref: "EVENT_RSVP_" + Date.now(),
+                amount: fee,
+                currency: "NGN",
+                customer: { email: email, name: name, phone_number: phone },
+                customizations: {
+                    title: "Event RSVP Ticket",
+                    description: "Payment for {{ $event->title }}"
+                },
+                callback: function(data) {
+                    const refInput = document.createElement('input');
+                    refInput.type = 'hidden';
+                    refInput.name = 'payment_reference';
+                    refInput.value = data.transaction_id || data.tx_ref;
+                    rsvpForm.appendChild(refInput);
+                    rsvpForm.submit();
+                },
+                onclose: function() {
+                    console.log("Payment modal closed");
+                }
+            });
+        });
+    }
+</script>
 
 </body>
 

@@ -160,13 +160,13 @@
         </div>
         <div class="flex items-center gap-4">
             <a href="{{ route('notifications') }}" class="relative text-primary text-xl">
-                <i class="fa-solid fa-bell"></i>
-                @if(auth()->user()->unreadNotifications->count() > 0)
-                <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white animation-pulse">
-                    {{ auth()->user()->unreadNotifications->count() }}
-                </span>
-                @endif
-            </a>
+            <i class="fa-solid fa-bell"></i>
+            @if(auth()->user()->unreadNotifications->count() > 0)
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white animation-pulse">
+                {{ auth()->user()->unreadNotifications->count() }}
+            </span>
+            @endif
+        </a>
             <form action="{{ route('logout') }}" method="POST" class="inline">
                 @csrf
                 <button type="submit" class="text-gray-400 hover:text-red-500 transition-colors text-xl" title="Logout">
@@ -194,21 +194,21 @@
 
         <!-- Quick Actions -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-12">
-            <a href="{{ route('payments') }}" class="bg-white p-6 md:p-8 rounded-[32px] shadow-sm border border-gray-100 flex flex-col items-center hover:scale-[1.02] hover:shadow-md transition-all">
-                <div class="w-14 h-14 rounded-2xl bg-primary/5 flex items-center justify-center text-primary text-2xl mb-4"><i class="fa-solid fa-money-bill-wave"></i></div>
-                <span class="text-[11px] font-black uppercase tracking-widest text-gray-500">Pay Dues</span>
+            <a href="{{ route('payments') }}" class="bg-white p-4 md:p-8 rounded-[20px] md:rounded-[32px] shadow-sm border border-gray-100 flex flex-col items-center hover:scale-[1.02] hover:shadow-md transition-all">
+                <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-primary/5 flex items-center justify-center text-primary text-xl md:text-2xl mb-4"><i class="fa-solid fa-money-bill-wave"></i></div>
+                <span class="text-[10px] md:text-[11px] font-black uppercase tracking-wider md:tracking-widest text-gray-500 text-center">Pay Dues</span>
             </a>
-            <a href="{{ route('directory') }}" class="bg-white p-6 md:p-8 rounded-[32px] shadow-sm border border-gray-100 flex flex-col items-center hover:scale-[1.02] hover:shadow-md transition-all">
-                <div class="w-14 h-14 rounded-2xl bg-secondary/5 flex items-center justify-center text-secondary text-2xl mb-4"><i class="fa-solid fa-user-group"></i></div>
-                <span class="text-[11px] font-black uppercase tracking-widest text-gray-500">Directory</span>
+            <a href="{{ route('directory') }}" class="bg-white p-4 md:p-8 rounded-[20px] md:rounded-[32px] shadow-sm border border-gray-100 flex flex-col items-center hover:scale-[1.02] hover:shadow-md transition-all">
+                <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-secondary/5 flex items-center justify-center text-secondary text-xl md:text-2xl mb-4"><i class="fa-solid fa-user-group"></i></div>
+                <span class="text-[10px] md:text-[11px] font-black uppercase tracking-wider md:tracking-widest text-gray-500 text-center">Directory</span>
             </a>
-            <a href="{{ route('events') }}" class="bg-white p-6 md:p-8 rounded-[32px] shadow-sm border border-gray-100 flex flex-col items-center hover:scale-[1.02] hover:shadow-md transition-all">
-                <div class="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center text-green-600 text-2xl mb-4"><i class="fa-solid fa-calendar-day"></i></div>
-                <span class="text-[11px] font-black uppercase tracking-widest text-gray-500">Events</span>
+            <a href="{{ route('events') }}" class="bg-white p-4 md:p-8 rounded-[20px] md:rounded-[32px] shadow-sm border border-gray-100 flex flex-col items-center hover:scale-[1.02] hover:shadow-md transition-all">
+                <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-green-50 flex items-center justify-center text-green-600 text-xl md:text-2xl mb-4"><i class="fa-solid fa-calendar-day"></i></div>
+                <span class="text-[10px] md:text-[11px] font-black uppercase tracking-wider md:tracking-widest text-gray-500 text-center">Events</span>
             </a>
-            <a href="{{ route('cooperative') }}" class="bg-white p-6 md:p-8 rounded-[32px] shadow-sm border border-gray-100 flex flex-col items-center hover:scale-[1.02] hover:shadow-md transition-all">
-                <div class="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-600 text-2xl mb-4"><i class="fa-solid fa-handshake"></i></div>
-                <span class="text-[11px] font-black uppercase tracking-widest text-gray-500">Cooperative</span>
+            <a href="{{ route('cooperative') }}" class="bg-white p-4 md:p-8 rounded-[20px] md:rounded-[32px] shadow-sm border border-gray-100 flex flex-col items-center hover:scale-[1.02] hover:shadow-md transition-all">
+                <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-600 text-xl md:text-2xl mb-4"><i class="fa-solid fa-handshake"></i></div>
+                <span class="text-[10px] md:text-[11px] font-black uppercase tracking-wider md:tracking-widest text-gray-500 text-center">Cooperative</span>
             </a>
         </div>
 
@@ -238,13 +238,13 @@
                 </section>
 
                 <!-- Donations -->
-                <section class="bg-white p-6 md:p-8 rounded-[32px] shadow-sm border border-gray-50 w-full overflow-hidden">
+                <section class="bg-white p-4 md:p-8 rounded-[24px] md:rounded-[32px] shadow-sm border border-gray-50 w-full overflow-hidden">
                     <h3 class="text-xl font-bold text-primary mb-6">Branch Project Support</h3>
-                    <div class="grid md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         @forelse($projects as $project)
-                        <div class="p-5 md:p-6 bg-gray-50 rounded-2xl">
+                        <div class="p-4 md:p-6 bg-gray-50 rounded-2xl">
                             <div class="flex items-center gap-4 mb-6">
-                               <div class="w-12 h-12 md:w-14 md:h-14 bg-secondary flex items-center justify-center text-white text-xl md:text-2xl rounded-2xl shadow-lg shadow-secondary/20">
+                               <div class="w-11 h-11 md:w-14 md:h-14 bg-secondary flex items-center justify-center text-white text-lg md:text-2xl rounded-2xl shadow-lg shadow-secondary/20 shrink-0">
                                    <i class="fa-solid {{ $project->icon ?? 'fa-hotel' }}"></i>
                                </div>
                                <div class="min-w-0 flex-1">
@@ -264,7 +264,7 @@
                                     <div class="bg-secondary h-full rounded-full" style="width: {{ $percentage }}%"></div>
                                 </div>
                             </div>
-                            <button onclick="window.location='{{ route('donate') }}'" class="w-full mt-8 bg-primary text-white py-3.5 rounded-xl font-extrabold text-[11px] tracking-widest uppercase">JOIN THE DONORS</button>
+                            <button onclick="window.location='{{ route('donate') }}'" class="w-full mt-6 bg-primary hover:bg-primary-light text-white py-3 md:py-3.5 px-2 rounded-xl font-extrabold text-[10px] md:text-[11px] tracking-wider uppercase transition-colors">JOIN THE DONORS</button>
                         </div>
                         @empty
                         <div class="p-10 bg-gray-50 rounded-2xl text-center col-span-2">

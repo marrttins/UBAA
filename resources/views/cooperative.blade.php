@@ -54,6 +54,92 @@
     .outline-card:hover { box-shadow: 0 8px 30px rgba(74,14,78,0.08); transform: translateY(-4px); }
     .success-toast { animation: slideDown 0.5s ease; }
     @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* FAQ Section Styles */
+    .faq-section {
+        padding: 85px 0;
+        background: #fdfdfd;
+        border-top: 1px solid #f0f0f0;
+    }
+    .faq-title-block {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+    .faq-title-block h2 {
+        font-size: 32px;
+        font-weight: 900;
+        color: var(--primary);
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: -0.5px;
+    }
+    .faq-title-block p {
+        color: var(--text-gray);
+        max-width: 600px;
+        margin: 0 auto;
+        font-size: 15px;
+    }
+    .faq-container {
+        max-width: 900px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .faq-item {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid rgba(74, 14, 78, 0.05);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        overflow: hidden;
+        transition: all 0.35s ease;
+    }
+    .faq-item.active {
+        border-color: var(--primary);
+        box-shadow: 0 12px 30px rgba(74, 14, 78, 0.08);
+    }
+    .faq-header {
+        padding: 24px 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.3s;
+        gap: 16px;
+    }
+    .faq-header:hover {
+        background-color: rgba(74, 14, 78, 0.02);
+    }
+    .faq-question {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--primary);
+        line-height: 1.4;
+    }
+    .faq-icon {
+        font-size: 14px;
+        color: var(--secondary);
+        transition: transform 0.3s ease;
+        flex-shrink: 0;
+    }
+    .faq-item.active .faq-icon {
+        transform: rotate(180deg);
+    }
+    .faq-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-in-out;
+    }
+    .faq-content {
+        padding: 0 28px 24px 28px;
+        font-size: 15px;
+        color: var(--text-gray);
+        line-height: 1.8;
+    }
+    .faq-content strong {
+        color: var(--text-dark);
+    }
 </style>
 @endsection
 
@@ -139,6 +225,68 @@
     </div>
 </section>
 
+{{-- Cooperative Estate Scheme Section --}}
+<section style="padding:90px 0;background:#fafafa;border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;">
+    <div class="container">
+        <div style="text-align:center;margin-bottom:48px;">
+            <span class="section-tag" style="display:inline-block;border:1px solid;padding:6px 20px;border-radius:50px;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--primary);margin-bottom:12px;">Premium Project</span>
+            <h2 style="font-size:32px;font-weight:900;color:#4A0E4E;margin-bottom:16px;">UNIBEN Alumni Cooperative Estate</h2>
+            <p style="color:#6b7280;max-width:600px;margin:0 auto;line-height:1.6;font-size:15px;">A premier residential estate offering a safe, secure, and modern lifestyle at Idi-Obi, Arapagi, Bogije axis of Lagos State.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:24px;margin-bottom:40px;">
+            <!-- Location Card -->
+            <div class="outline-card" style="display:flex;flex-direction:column;gap:12px;">
+                <div style="width:48px;height:48px;border-radius:14px;background:rgba(74,14,78,0.05);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:20px;">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                </div>
+                <h3 style="font-size:18px;font-weight:800;color:var(--primary);">Strategic Location</h3>
+                <p style="font-size:14px;color:#6b7280;line-height:1.6;flex-grow:1;">Located at <strong>Idi-Obi, Arapagi, Bogije axis, Lagos State</strong>. Enjoying close proximity to the proposed Elerangbe Int'l Airport. Accessibility is highly optimized with an ongoing direct Sangotedo link road and waterways ferry routes.</p>
+            </div>
+
+            <!-- Land Specs Card -->
+            <div class="outline-card" style="display:flex;flex-direction:column;gap:12px;">
+                <div style="width:48px;height:48px;border-radius:14px;background:rgba(212,175,55,0.1);color:var(--secondary-dark);display:flex;align-items:center;justify-content:center;font-size:20px;">
+                    <i class="fa-solid fa-maximize"></i>
+                </div>
+                <h3 style="font-size:18px;font-weight:800;color:var(--primary);">Plot Specifications</h3>
+                <p style="font-size:14px;color:#6b7280;line-height:1.6;flex-grow:1;">Each standard plot measures exactly <strong>500 square metres (500sqm)</strong>. Designed as a perfect layout for residential comfort, development, and shared prosperity.</p>
+            </div>
+
+            <!-- Price & Title Card -->
+            <div class="outline-card" style="display:flex;flex-direction:column;gap:12px;">
+                <div style="width:48px;height:48px;border-radius:14px;background:rgba(22,163,74,0.05);color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:20px;">
+                    <i class="fa-solid fa-file-signature"></i>
+                </div>
+                <h3 style="font-size:18px;font-weight:800;color:var(--primary);">Pricing & Secure Title</h3>
+                <p style="font-size:14px;color:#6b7280;line-height:1.6;flex-grow:1;">Purchasable at <strong>₦10,000,000 per plot</strong>. Includes **Global C of O** and Deed. Subscribers can process their Governor's Consent upon full payment completion.</p>
+            </div>
+
+            <!-- Payment Plans Card -->
+            <div class="outline-card" style="display:flex;flex-direction:column;gap:12px;">
+                <div style="width:48px;height:48px;border-radius:14px;background:rgba(147,51,234,0.05);color:#9333ea;display:flex;align-items:center;justify-content:center;font-size:20px;">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+                <h3 style="font-size:18px;font-weight:800;color:var(--primary);">Installment Options</h3>
+                <p style="font-size:14px;color:#6b7280;line-height:1.6;flex-grow:1;">Flexible payment plan of <strong>3 to 6 months</strong> is available. Subscriptions require a <strong>30% initial deposit</strong>, with maximum payments capped at 3 installments.</p>
+            </div>
+        </div>
+
+        <div style="background:linear-gradient(135deg, var(--primary), var(--primary-light));color:white;padding:32px 40px;border-radius:24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:24px;">
+            <div style="flex:1;min-width:280px;">
+                <h3 style="font-size:22px;font-weight:800;margin-bottom:8px;">Interested in subscribing to a plot?</h3>
+                <p style="font-size:14px;opacity:0.8;line-height:1.5;">Apply today to lock in your plot. Open to members of the society and referred non-members.</p>
+            </div>
+            <div style="display:flex;gap:16px;">
+                <a href="javascript:void(0)" onclick="openApplyModal()" class="btn btn-secondary" style="padding:14px 28px;border-radius:12px;font-weight:800;">Apply for Land</a>
+                <a href="{{ asset('storage/Uniben_Alumni_cooperative_Estate.pdf') }}" download target="_blank" class="btn btn-outline" style="border:2px solid white;color:white;padding:14px 28px;border-radius:12px;font-weight:800;background:transparent;">
+                    <i class="fa-solid fa-file-pdf"></i> Download Scheme FAQ & Form
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
 {{-- Outlines Section --}}
 @php $outlines = $setting && $setting->outlines ? array_filter(explode("\n", $setting->outlines)) : []; @endphp
 @if(count($outlines) > 0)
@@ -161,6 +309,243 @@
     </div>
 </section>
 @endif
+
+{{-- FAQ Section --}}
+<section class="faq-section" id="faq">
+    <div class="container">
+        <div class="faq-title-block">
+            <span class="section-tag" style="display:inline-block;border:1px solid;padding:6px 20px;border-radius:50px;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--primary);margin-bottom:12px;">Got Questions?</span>
+            <h2>Cooperative Estate FAQs</h2>
+            <p>Find answers to common questions about our property specifications, accessibility, payment structures, and title documentation.</p>
+        </div>
+
+        <div class="faq-container">
+            <!-- FAQ 1 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">1. What is UNIBEN Alumni Lagos Cooperative Estate?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        UNIBEN Alumni Lagos Cooperative Estate is a real estate initiative of the UNIBEN Alumni Lagos Cooperative Society, created to provide affordable and secure land ownership opportunities for members and interested non-members.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">2. Where is the estate located?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        The estate is located at <strong>Idi-Obi, Arapagi, Bogije axis of Lagos State</strong>.<br>
+                        It enjoys close proximity to the proposed Elerangbe International Airport, making it a highly strategic and future-forward investment location. There is an ongoing construction of a major link road from Sangotedo (opposite Shoprite) directly to the estate, which will significantly improve accessibility. In addition, access to the estate can also be achieved via waterways (ferry transport), offering a faster and alternative route. Detailed site information, inspection schedules, and access guidance will be communicated to subscribers by the estate management.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 3 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">3. Who can buy land in the estate?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        Members of the UNIBEN Alumni Lagos Cooperative Society and any non-members who wish to buy. However, any non-member subscriber must be introduced by an active, existing member of the society.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 4 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">4. What is the size of each land allocation?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        Each standard plot measures <strong>500 square metres (500sqm)</strong>.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 5 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">5. What is the cost of land?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        The land is priced at <strong>₦10,000,000 (10 Million Naira) per plot</strong>, which includes a Global C of O and Deed of Assignment.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 6 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">6. Is there a payment plan?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        Yes, a flexible <strong>3 to 6 months</strong> installment plan is available for subscribers.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 7 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">7. How does the payment plan work?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        An <strong>initial deposit of 30%</strong> is required. The balance must be cleared within 3 to 6 months, and payments cannot exceed 3 installments.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 8 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">8. Can payments be made more frequently than three installments?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        No. Payments are strictly structured to be made a maximum of three times within the agreed payment window.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 9 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">9. What happens if I default on payment?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        Failure to complete payment within the stipulated period may result in forfeiture or penalties, subject to the cooperative's standard terms and conditions.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 10 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">10. Are development fees included in the land price?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        No. Development fees are charged separately and will be communicated to all subscribers at a later date.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 11 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">11. When will the development fee be paid?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        Development fees will be determined and charged later, accounting for inflation and prevailing economic conditions at the time development begins.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 12 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">12. Is Certificate of Occupancy (C of O) included in the price?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        Yes, the land price includes a <strong>Global C of O and Deed</strong>. However, subscribers can independently process their Governor's Consent after they complete their payments.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 13 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">13. Is land survey included in the land price?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        No. Land survey fees are separate and payable after full payment towards the land purchase has been completed.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 14 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">14. When will allocation be done?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        Allocation will be carried out after completion of payment and fulfillment of all required documentation.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 15 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">15. Will I receive an allocation letter?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        Yes. Successful subscribers will receive an official Allocation Letter from the cooperative.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 16 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">16. Can I resell or transfer my land?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        Resale or transfer is subject to the formal approval and guidelines of the UNIBEN Alumni Lagos Cooperative Society.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 17 -->
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span class="faq-question">17. Who do I contact for enquiries?</span>
+                    <span class="faq-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                </div>
+                <div class="faq-body">
+                    <div class="faq-content">
+                        All enquiries should be directed to the cooperative secretariat:<br>
+                        <strong>3 William Carew crescent Anthony-Maryland, Lagos.</strong><br>
+                        Or call phone support: <strong>+234 806 760 7870</strong>, <strong>+234 803 443 2804</strong>, or <strong>+234 806 504 6269</strong>.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 {{-- Gallery Section --}}
 @if($setting && $setting->gallery_images && count($setting->gallery_images) > 0)
@@ -227,8 +612,8 @@
                         </div>
                     </div>
                     <div>
-                        <label style="display:block;font-size:10px;font-weight:800;color:#9ca3af;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;padding-left:4px;">Why do you want to join?</label>
-                        <textarea name="reason" rows="3" style="width:100%;padding:14px 18px;background:#f9fafb;border:none;border-radius:14px;font-size:14px;font-weight:600;color:#374151;outline:none;resize:vertical;" placeholder="Tell us briefly..."></textarea>
+                        <label style="display:block;font-size:10px;font-weight:800;color:#9ca3af;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;padding-left:4px;">Application details (e.g. Reason for joining, or Plot details if subscribing to land)</label>
+                        <textarea name="reason" rows="3" style="width:100%;padding:14px 18px;background:#f9fafb;border:none;border-radius:14px;font-size:14px;font-weight:600;color:#374151;outline:none;resize:vertical;" placeholder="Specify why you want to join the cooperative society, or indicate the number of plots and payment plan if subscribing to the Uniben Alumni Cooperative Estate."></textarea>
                     </div>
                     <button type="submit" style="width:100%;padding:16px;background:#4A0E4E;color:white;border:none;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 8px 20px rgba(74,14,78,0.2);margin-top:8px;">
                         Submit Application
@@ -274,6 +659,28 @@
 
 @section('extra_js')
 <script>
+    function toggleFaq(el) {
+        const item = el.parentElement;
+        const body = item.querySelector('.faq-body');
+        const isActive = item.classList.contains('active');
+        
+        // Close all other items
+        document.querySelectorAll('.faq-item').forEach(otherItem => {
+            if (otherItem !== item) {
+                otherItem.classList.remove('active');
+                otherItem.querySelector('.faq-body').style.maxHeight = null;
+            }
+        });
+        
+        if (isActive) {
+            item.classList.remove('active');
+            body.style.maxHeight = null;
+        } else {
+            item.classList.add('active');
+            body.style.maxHeight = body.scrollHeight + "px";
+        }
+    }
+
     function openVideo() {
         document.getElementById('videoModal').style.display = 'flex';
         document.body.style.overflow = 'hidden';
