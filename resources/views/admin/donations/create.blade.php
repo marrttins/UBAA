@@ -55,10 +55,10 @@
             </div>
 
             <div class="flex items-center gap-4 border-t border-gray-50 mt-10 pt-10">
-                <button type="submit" class="bg-primary text-white py-4 px-12 rounded-2xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-purple-100 flex items-center gap-3">
+                <button type="submit" class="bg-[var(--primary)] text-white py-4 px-12 rounded-2xl font-bold hover:bg-[var(--primary-dark)] transition-all shadow-lg shadow-purple-50 flex items-center gap-3">
                     <i class="fas fa-rocket text-xs"></i> Launch Project
                 </button>
-                <a href="{{ route('admin.donations') }}" class="text-gray-400 font-bold hover:text-gray-600 transition-colors px-6">Discard</a>
+                <a href="{{ route('admin.donations') }}" class="border border-gray-200 text-gray-500 font-bold py-4 px-8 rounded-2xl hover:bg-gray-50 hover:text-gray-700 transition-all">Discard</a>
             </div>
         </form>
     </div>
