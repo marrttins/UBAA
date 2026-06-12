@@ -578,3 +578,21 @@ Route::post('/cooperative/apply', function(\Illuminate\Http\Request $request) {
 
     return redirect()->route('cooperative')->with('success', 'Your application has been submitted successfully! Our cooperative secretary will contact you soon.');
 })->name('cooperative.apply');
+
+Route::get('/run-symlink', function () {
+    try {
+        $link = public_path('storage');
+        if (file_exists($link)) {
+            if (is_link($link)) {
+                unlink($link);
+            } else {
+                rename($link, $link . '_backup_' . time());
+            }
+        }
+        
+        \Illuminate\Support\Facades\Artisan::call('storage:link');
+        return "Symlink created successfully! Output: <pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
+    } catch (\Exception $e) {
+        return "Error creating symlink: " . $e->getMessage();
+    }
+});
