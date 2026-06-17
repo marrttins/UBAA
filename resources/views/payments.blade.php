@@ -181,7 +181,7 @@
                         <p class="text-sm text-white/80">Complete your registration by paying the entry fee.</p>
                     </div>
                     <div>
-                        <button onclick="payWithFlutterwave({{ (float)request('amount') }}, '{{ request('purpose') }}')" class="bg-white text-orange-600 font-bold px-8 py-4 rounded-2xl shadow-lg hover:bg-gray-50 transition-all flex items-center gap-2">
+                        <button onclick="payPendingEvent({{ (float)request('amount') }}, '{{ request('purpose') }}')" class="bg-white text-orange-600 font-bold px-8 py-4 rounded-2xl shadow-lg hover:bg-gray-50 transition-all flex items-center gap-2">
                             <i class="fa-solid fa-credit-card"></i> Pay ₦{{ number_format(request('amount'), 2) }}
                         </button>
                     </div>
@@ -274,14 +274,15 @@
     @include('layouts.bottom-nav')
 </div>
 
-<!-- Dues Modal (Kept for business logic) -->
+<!-- Dues Modal (With payment method selector) -->
 <div id="duesModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
    <div class="bg-white rounded-[32px] p-8 w-full max-w-md relative shadow-2xl">
-      <button onclick="document.getElementById('duesModal').classList.add('hidden')" class="absolute top-6 right-6 w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-full font-black text-gray-400"><i class="fa-solid fa-xmark"></i></button>
+      <button onclick="closeDuesModal()" class="absolute top-6 right-6 w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-full font-black text-gray-400"><i class="fa-solid fa-xmark"></i></button>
       <h3 class="text-2xl font-black text-primary mb-8 tracking-tight">ANNUAL DUES</h3>
       
-      <div class="space-y-4">
-         <button onclick="payWithFlutterwave(25000, 'Yearly Dues')" class="w-full bg-primary text-white p-6 rounded-3xl text-left hover:scale-[1.02] transition-transform shadow-lg shadow-primary/10">
+      <!-- Screen 1: Plan Selection -->
+      <div id="planSelectScreen" class="space-y-4">
+         <button onclick="selectPlan(25000, 'Yearly Dues')" class="w-full bg-primary text-white p-6 rounded-3xl text-left hover:scale-[1.02] transition-transform shadow-lg shadow-primary/10">
             <div class="flex justify-between items-center mb-1">
                 <span class="font-black">YEARLY PAYMENT</span>
                 <span class="text-secondary font-black">₦25,000</span>
@@ -289,7 +290,7 @@
             <p class="text-xs text-white/60">Full access for the calendar year</p>
          </button>
 
-         <button onclick="payWithFlutterwave(2500, 'Monthly Dues')" class="w-full bg-white border border-gray-100 p-6 rounded-3xl text-left hover:shadow-md transition-all">
+         <button onclick="selectPlan(2500, 'Monthly Dues')" class="w-full bg-white border border-gray-100 p-6 rounded-3xl text-left hover:shadow-md transition-all">
             <div class="flex justify-between items-center mb-1">
                 <span class="font-black text-gray-800">MONTHLY PLAN</span>
                 <span class="text-primary font-black">₦2,500</span>
@@ -297,11 +298,118 @@
             <p class="text-xs text-gray-400">Convenient monthly subscription</p>
          </button>
       </div>
+
+      <!-- Screen 2: Payment Method Selection -->
+      <div id="paymentMethodScreen" class="hidden space-y-4">
+         <button onclick="goBackToPlans()" class="text-xs font-bold text-gray-400 hover:text-gray-600 mb-2 flex items-center gap-1"><i class="fa-solid fa-arrow-left"></i> BACK</button>
+         <h4 class="font-bold text-gray-800 text-sm mb-4">Choose how you want to pay:</h4>
+         
+         <button onclick="payOnline()" class="w-full bg-primary text-white p-5 rounded-3xl text-left hover:scale-[1.02] transition-transform flex items-center justify-between shadow-lg">
+             <div>
+                 <span class="font-black block text-sm">PAY ONLINE</span>
+                 <span class="text-xs text-white/70">Instant confirmation via Card/USSD</span>
+             </div>
+             <i class="fa-solid fa-credit-card text-lg"></i>
+         </button>
+
+         <button onclick="showManualPay()" class="w-full bg-white border border-gray-200 p-5 rounded-3xl text-left hover:shadow-md transition-all flex items-center justify-between">
+             <div>
+                 <span class="font-black block text-sm text-gray-800">BANK TRANSFER</span>
+                 <span class="text-xs text-gray-400">Manual verification by admin</span>
+             </div>
+             <i class="fa-solid fa-building-columns text-lg text-primary"></i>
+         </button>
+      </div>
+
+      <!-- Screen 3: Manual Payment Instructions & Upload -->
+      <div id="manualPayScreen" class="hidden space-y-4">
+         <button onclick="goBackToMethods()" class="text-xs font-bold text-gray-400 hover:text-gray-600 mb-2 flex items-center gap-1"><i class="fa-solid fa-arrow-left"></i> BACK</button>
+         <h4 class="font-black text-primary text-base">Bank Transfer Details</h4>
+         
+         <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100 text-xs space-y-2">
+             <div class="flex justify-between">
+                 <span class="text-gray-400 font-bold">BANK NAME:</span>
+                 <span class="text-gray-800 font-black">{{ $paymentSetting->bank_name ?? 'N/A' }}</span>
+             </div>
+             <div class="flex justify-between">
+                 <span class="text-gray-400 font-bold">ACCOUNT NAME:</span>
+                 <span class="text-gray-800 font-black">{{ $paymentSetting->account_name ?? 'N/A' }}</span>
+             </div>
+             <div class="flex justify-between">
+                 <span class="text-gray-400 font-bold">ACCOUNT NUMBER:</span>
+                 <span class="text-gray-800 font-black font-mono">{{ $paymentSetting->account_number ?? 'N/A' }}</span>
+             </div>
+             <div class="pt-2 border-t border-gray-200">
+                 <span class="text-gray-400 font-bold block mb-1">INSTRUCTIONS:</span>
+                 <p class="text-gray-600 font-medium leading-relaxed">{{ $paymentSetting->instructions ?? '' }}</p>
+             </div>
+         </div>
+
+         <form action="{{ route('payment.manual') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+             @csrf
+             <input type="hidden" name="amount" id="manualPayAmount">
+             <input type="hidden" name="description" id="manualPayDescription">
+             
+             <div>
+                 <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 font-bold">Upload Receipt (JPG, PNG, PDF)</label>
+                 <input type="file" name="proof_of_payment" class="w-full bg-gray-50 border border-gray-100 rounded-xl text-xs p-3 font-semibold" required>
+             </div>
+             
+             <button type="submit" class="w-full bg-primary text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg hover:brightness-110 active:scale-95 transition-all">Submit Proof of Payment</button>
+         </form>
+      </div>
    </div>
 </div>
 
 <script src="https://checkout.flutterwave.com/v3.js"></script>
 <script>
+  let currentAmount = 0;
+  let currentPurpose = '';
+
+  function selectPlan(amount, purpose) {
+      currentAmount = amount;
+      currentPurpose = purpose;
+      document.getElementById('planSelectScreen').classList.add('hidden');
+      document.getElementById('paymentMethodScreen').classList.remove('hidden');
+  }
+
+  function goBackToPlans() {
+      document.getElementById('paymentMethodScreen').classList.add('hidden');
+      document.getElementById('planSelectScreen').classList.remove('hidden');
+  }
+
+  function payOnline() {
+      payWithFlutterwave(currentAmount, currentPurpose);
+  }
+
+  function showManualPay() {
+      document.getElementById('manualPayAmount').value = currentAmount;
+      document.getElementById('manualPayDescription').value = currentPurpose;
+      document.getElementById('paymentMethodScreen').classList.add('hidden');
+      document.getElementById('manualPayScreen').classList.remove('hidden');
+  }
+
+  function goBackToMethods() {
+      document.getElementById('manualPayScreen').classList.add('hidden');
+      document.getElementById('paymentMethodScreen').classList.remove('hidden');
+  }
+
+  function payPendingEvent(amount, purpose) {
+      currentAmount = amount;
+      currentPurpose = purpose;
+      document.getElementById('planSelectScreen').classList.add('hidden');
+      document.getElementById('paymentMethodScreen').classList.remove('hidden');
+      document.getElementById('duesModal').classList.remove('hidden');
+  }
+
+  function closeDuesModal() {
+      document.getElementById('duesModal').classList.add('hidden');
+      // Reset screens
+      document.getElementById('planSelectScreen').classList.remove('hidden');
+      document.getElementById('paymentMethodScreen').classList.add('hidden');
+      document.getElementById('manualPayScreen').classList.add('hidden');
+  }
+
   function payWithFlutterwave(amount, paymentFor) {
     FlutterwaveCheckout({
       public_key: "{{ config('services.flutterwave.public_key') }}",
@@ -323,7 +431,7 @@
             })
         }).then(res => res.json()).then(() => {
             alert("Payment of ₦" + amount.toLocaleString() + " for " + paymentFor + " was successful!");
-            document.getElementById('duesModal').classList.add('hidden');
+            closeDuesModal();
             window.location.reload();
         });
       }

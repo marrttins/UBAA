@@ -6,8 +6,17 @@ use App\Http\Controllers\AuthController;
 Route::get('/', function () {
     $news = \App\Models\News::latest()->take(3)->get();
     $events = \App\Models\Event::latest()->take(3)->get();
-    $executives = \App\Models\User::whereIn('role', ['chairman', 'vice_chairman', 'secretary', 'legal', 'welfare', 'pro', 'pro_ii'])
-        ->orderByRaw("FIELD(role, 'chairman', 'vice_chairman', 'secretary', 'legal', 'welfare', 'pro', 'pro_ii')")
+    $executives = \App\Models\User::whereNotIn('role', ['user', 'admin'])
+        ->orderByRaw("CASE 
+            WHEN role = 'chairman' THEN 1 
+            WHEN role = 'vice_chairman' THEN 2 
+            WHEN role = 'secretary' THEN 3 
+            WHEN role = 'legal' THEN 4 
+            WHEN role = 'welfare' THEN 5 
+            WHEN role = 'pro' THEN 6 
+            WHEN role = 'pro_ii' THEN 7 
+            ELSE 8 
+        END")
         ->get();
     $gallery = \App\Models\Gallery::latest()->take(5)->get();
     $jobs = \App\Models\JobPosting::where('status', 'approved')->latest()->take(5)->get();
@@ -32,6 +41,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/signup/resend-otp', [AuthController::class, 'resendOtp'])->name('signup.resend_otp');
     Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('forgot.password');
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot.password.post');
+    Route::get('/forgot-password/verify', [AuthController::class, 'showForgotPasswordVerify'])->name('forgot.password.verify');
+    Route::post('/forgot-password/verify', [AuthController::class, 'forgotPasswordVerify'])->name('forgot.password.verify.post');
+    Route::post('/forgot-password/resend-otp', [AuthController::class, 'resendForgotPasswordOtp'])->name('forgot.password.resend_otp');
 });
 
 Route::get('/gallery', function () {
@@ -91,6 +103,25 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/edit', function () {
         return view('profile-edit');
     })->name('profile.edit');
+
+    Route::get('/profile/{user}', function (\App\Models\User $user) {
+        $connectionsCount = \App\Models\Connection::where(function($q) use ($user) {
+            $q->where('user_id', $user->id)->orWhere('connected_user_id', $user->id);
+        })->where('status', 'accepted')->count();
+        
+        $eventsCount = \App\Models\Payment::where('user_id', $user->id)
+            ->where(function($q) {
+                $q->where('description', 'like', '%Event%')
+                  ->orWhere('description', 'like', '%Ticket%');
+            })
+            ->where('status', 'Paid')
+            ->count();
+            
+        $minGradYear = $user->degrees()->min('graduation_year') ?? $user->graduation_year ?? date('Y');
+        $yearsActive = max(1, date('Y') - (int)$minGradYear);
+        
+        return view('profile', compact('connectionsCount', 'eventsCount', 'yearsActive', 'user'));
+    })->name('profile.show');
 
     Route::post('/profile/edit', function (\Illuminate\Http\Request $request) {
         $user = auth()->user();
@@ -271,8 +302,9 @@ Route::middleware('auth')->group(function () {
             
         $totalDues = 25000;
         $remainingDues = max(0, $totalDues - $duesPaidThisYear);
+        $paymentSetting = \App\Models\PaymentSetting::first();
 
-        return view('payments', compact('payments', 'currentYear', 'duesPaidThisYear', 'totalDues', 'remainingDues'));
+        return view('payments', compact('payments', 'currentYear', 'duesPaidThisYear', 'totalDues', 'remainingDues', 'paymentSetting'));
     })->name('payments');
 
     Route::post('/payment/record', function (\Illuminate\Http\Request $request) {
@@ -305,6 +337,65 @@ Route::middleware('auth')->group(function () {
         return response()->json(['success' => true]);
     })->name('payment.record');
 
+    Route::post('/payment/manual', function (\Illuminate\Http\Request $request) {
+        $request->validate([
+            'amount' => 'required|numeric',
+            'description' => 'required|string',
+            'proof_of_payment' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240',
+        ]);
+
+        $proofPath = null;
+        if ($request->hasFile('proof_of_payment')) {
+            $proofPath = $request->file('proof_of_payment')->store('proofs', 'public');
+        }
+
+        $reference = 'MAN_' . time() . '_' . rand(1000, 9999);
+
+        $payment = \App\Models\Payment::create([
+            'user_id' => auth()->id(),
+            'reference' => $reference,
+            'description' => $request->description,
+            'amount' => $request->amount,
+            'status' => 'Pending',
+            'payment_method' => 'manual',
+            'proof_of_payment' => $proofPath ? 'storage/' . $proofPath : null,
+        ]);
+
+        // If it is a shop purchase, we need to record the Order as well!
+        if (str_starts_with($request->description, 'Shop Purchase:')) {
+            \App\Models\Order::create([
+                'user_id' => auth()->id(),
+                'items' => $request->items ?? 'Shop Items',
+                'total_amount' => $request->amount,
+                'reference' => $reference,
+                'delivery_mode' => $request->delivery_mode ?? 'meeting',
+                'delivery_address' => $request->delivery_address,
+                'delivery_phone' => $request->delivery_phone,
+                'status' => 'pending'
+            ]);
+        }
+
+        // If it's an event, we need to create the EventReservation as well!
+        if (str_starts_with($request->description, 'Event Ticket:')) {
+            $eventTitle = str_replace('Event Ticket: ', '', $request->description);
+            $event = \App\Models\Event::where('title', $eventTitle)->first();
+            if ($event) {
+                \App\Models\EventReservation::create([
+                    'event_id' => $event->id,
+                    'user_id' => auth()->id(),
+                    'name' => $request->name ?? auth()->user()->name,
+                    'email' => $request->email ?? auth()->user()->email,
+                    'phone' => $request->phone ?? auth()->user()->phone,
+                    'amount' => $event->fee,
+                    'status' => 'pending',
+                    'payment_method' => 'manual'
+                ]);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Manual payment submitted successfully! Admin will verify and confirm shortly.');
+    })->name('payment.manual');
+
     Route::get('/transactions', function () {
         $payments = \App\Models\Payment::where('user_id', auth()->id())->latest()->get();
         return view('transactions', compact('payments'));
@@ -317,7 +408,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/shop', function () {
         $products = \App\Models\Product::all();
-        return view('shop', compact('products'));
+        $paymentSetting = \App\Models\PaymentSetting::first();
+        return view('shop', compact('products', 'paymentSetting'));
     })->name('shop');
 
     Route::post('/shop/checkout', function (\Illuminate\Http\Request $request) {
@@ -375,13 +467,15 @@ Route::middleware('auth')->group(function () {
             ->get();
             
         $projects = \App\Models\DonationProject::where('is_active', true)->latest()->get();
+        $paymentSetting = \App\Models\PaymentSetting::first();
             
-        return view('donate', compact('recentDonors', 'projects'));
+        return view('donate', compact('recentDonors', 'projects', 'paymentSetting'));
     })->name('donate');
 
     // Events Detail Route
     Route::get('/events-detail/{event}', function (\App\Models\Event $event) {
-        return view('event-detail', compact('event'));
+        $paymentSetting = \App\Models\PaymentSetting::first();
+        return view('event-detail', compact('event', 'paymentSetting'));
     })->name('events.detail');
 
     Route::post('/events-detail/{event}/rsvp', function (\Illuminate\Http\Request $request, \App\Models\Event $event) {
@@ -494,6 +588,7 @@ Route::prefix('admin')->middleware(['web', 'admin'])->group(function () {
     
     Route::get('/users/{user}/edit', [\App\Http\Controllers\AdminController::class, 'editUser'])->name('admin.users.edit');
     Route::post('/users/{user}/edit', [\App\Http\Controllers\AdminController::class, 'updateUser'])->name('admin.users.update');
+    Route::delete('/users/{user}', [\App\Http\Controllers\AdminController::class, 'deleteUser'])->name('admin.users.delete');
     Route::get('/events', [\App\Http\Controllers\AdminController::class, 'events'])->name('admin.events');
     Route::get('/events/create', [\App\Http\Controllers\AdminController::class, 'createEvent'])->name('admin.events.create');
     Route::post('/events/create', [\App\Http\Controllers\AdminController::class, 'storeEvent'])->name('admin.events.store');
@@ -528,6 +623,9 @@ Route::prefix('admin')->middleware(['web', 'admin'])->group(function () {
     Route::post('/orders/{order}/status', [\App\Http\Controllers\AdminController::class, 'updateOrderStatus'])->name('admin.orders.status');
 
     Route::get('/payments', [\App\Http\Controllers\AdminController::class, 'payments'])->name('admin.payments');
+    Route::post('/payments/settings', [\App\Http\Controllers\AdminController::class, 'updatePaymentSettings'])->name('admin.payments.settings');
+    Route::post('/payments/{payment}/approve', [\App\Http\Controllers\AdminController::class, 'approvePayment'])->name('admin.payments.approve');
+    Route::post('/payments/{payment}/reject', [\App\Http\Controllers\AdminController::class, 'rejectPayment'])->name('admin.payments.reject');
 
     Route::get('/donations', [\App\Http\Controllers\AdminController::class, 'donationProjects'])->name('admin.donations');
     Route::get('/donations/create', [\App\Http\Controllers\AdminController::class, 'createDonationProject'])->name('admin.donations.create');

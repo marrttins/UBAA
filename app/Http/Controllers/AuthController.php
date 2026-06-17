@@ -142,7 +142,7 @@ class AuthController extends Controller
         // Log the user in
         Auth::login($user);
 
-        return redirect()->intended('/dashboard');
+        return redirect()->route('profile.edit')->with('success', 'Registration successful! Please update your profile record.');
     }
 
     public function resendOtp(Request $request)
@@ -177,9 +177,109 @@ class AuthController extends Controller
 
     public function forgotPassword(Request $request)
     {
-        // Conceptual mockup for typical reset logic
-        $request->validate(['email' => 'required|email']);
-        return back()->with('status', 'We have emailed your password reset link!');
+        $validated = $request->validate([
+            'email' => ['required', 'email', 'exists:users,email'],
+        ], [
+            'email.exists' => 'We could not find an account with that email address.',
+        ]);
+
+        $user = User::where('email', $validated['email'])->first();
+        $otp = (string) rand(100000, 999999);
+
+        session([
+            'password_reset_email' => $user->email,
+            'password_reset_otp' => $otp,
+            'password_reset_otp_expires_at' => now()->addMinutes(15),
+        ]);
+
+        try {
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(
+                new \App\Mail\ForgotPasswordOtpMail($user->first_name ?? $user->name, $otp, 15)
+            );
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Forgot password OTP email failed: ' . $e->getMessage());
+        }
+
+        return redirect()->route('forgot.password.verify')->with('success', 'A verification code has been sent to your email.');
+    }
+
+    public function showForgotPasswordVerify()
+    {
+        if (!session()->has('password_reset_email')) {
+            return redirect()->route('forgot.password');
+        }
+
+        return view('auth.forgot-password-verify');
+    }
+
+    public function forgotPasswordVerify(Request $request)
+    {
+        if (!session()->has('password_reset_email')) {
+            return redirect()->route('forgot.password');
+        }
+
+        $request->validate([
+            'otp' => ['required', 'string', 'size:6'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $sessionOtp = session('password_reset_otp');
+        $expiresAt = session('password_reset_otp_expires_at');
+        $email = session('password_reset_email');
+
+        if (!$sessionOtp || !$expiresAt || now()->greaterThan($expiresAt)) {
+            return back()->with('error', 'The verification code has expired. Please request a new one.');
+        }
+
+        if ($request->otp !== $sessionOtp) {
+            return back()->withErrors(['otp' => 'The entered verification code is incorrect.']);
+        }
+
+        $user = User::where('email', $email)->first();
+        if ($user) {
+            $user->update([
+                'password' => Hash::make($request->password)
+            ]);
+
+            session()->forget(['password_reset_email', 'password_reset_otp', 'password_reset_otp_expires_at']);
+
+            Auth::login($user);
+
+            return redirect()->intended('/dashboard')->with('success', 'Password reset successfully!');
+        }
+
+        return redirect()->route('login')->with('error', 'Something went wrong. Please try again.');
+    }
+
+    public function resendForgotPasswordOtp(Request $request)
+    {
+        if (!session()->has('password_reset_email')) {
+            return redirect()->route('forgot.password');
+        }
+
+        $email = session('password_reset_email');
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            return redirect()->route('forgot.password');
+        }
+
+        $otp = (string) rand(100000, 999999);
+
+        session([
+            'password_reset_otp' => $otp,
+            'password_reset_otp_expires_at' => now()->addMinutes(15),
+        ]);
+
+        try {
+            \Illuminate\Support\Facades\Mail::to($email)->send(
+                new \App\Mail\ForgotPasswordOtpMail($user->first_name ?? $user->name, $otp, 15)
+            );
+            return back()->with('success', 'A new verification code has been sent to your email.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Resend Forgot Password OTP email failed: ' . $e->getMessage());
+            return back()->with('error', 'Failed to send verification email. Please try again.');
+        }
     }
 
     public function logout(Request $request)

@@ -207,7 +207,7 @@
             <div class="bg-white p-6 rounded-[32px] border border-gray-50 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
                 <div class="flex items-start gap-6 relative z-10">
 
-                    <div class="relative shrink-0">
+                    <a href="{{ route('profile.show', $user->id) }}" class="relative shrink-0 block hover:opacity-90 transition-opacity">
                         <img src="{{ asset($user->avatar_url ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=4A0E4E&color=fff') }}" 
                              onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=4A0E4E&color=fff'" 
                              class="w-20 h-20 rounded-3xl object-cover bg-gray-50 border-2 border-gray-100">
@@ -217,10 +217,12 @@
                             <i class="fa-solid fa-check"></i>
                         </div>
                         @endif
-                    </div>
+                    </a>
                     
                     <div class="flex-1 min-w-0">
-                        <h3 class="text-xl font-bold text-primary mb-1 truncate">{{ $user->name }}</h3>
+                        <a href="{{ route('profile.show', $user->id) }}" class="hover:underline hover:text-secondary transition-colors">
+                            <h3 class="text-xl font-bold text-primary mb-1 truncate">{{ $user->name }}</h3>
+                        </a>
                         <p class="text-[10px] font-black text-secondary tracking-widest uppercase mb-3">'{{ substr($user->graduation_year ?? 'N/A', -2) }} • {{ $user->degree ?? 'Alumnus' }}</p>
                         
                         <div class="space-y-2 mb-6">

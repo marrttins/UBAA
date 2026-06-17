@@ -11,7 +11,9 @@ class Payment extends Model
         'reference',
         'description',
         'amount',
-        'status'
+        'status',
+        'payment_method',
+        'proof_of_payment'
     ];
 
     public function user()

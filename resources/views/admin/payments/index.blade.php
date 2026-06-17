@@ -46,10 +46,10 @@
 </div>
 
 <div class="mb-8 flex flex-wrap gap-3">
-    <a href="{{ route('admin.payments') }}" class="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all {{ !$type ? 'bg-primary text-white shadow-lg' : 'bg-white text-gray-400 border border-gray-50 hover:bg-gray-50' }}">All Payments</a>
-    <a href="{{ route('admin.payments', ['type' => 'dues']) }}" class="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all {{ $type == 'dues' ? 'bg-primary text-white shadow-lg' : 'bg-white text-gray-400 border border-gray-50 hover:bg-gray-50' }}">Membership Dues</a>
-    <a href="{{ route('admin.payments', ['type' => 'shop']) }}" class="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all {{ $type == 'shop' ? 'bg-primary text-white shadow-lg' : 'bg-white text-gray-400 border border-gray-50 hover:bg-gray-50' }}">Shop Purchases</a>
-    <a href="{{ route('admin.payments', ['type' => 'donation']) }}" class="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all {{ $type == 'donation' ? 'bg-primary text-white shadow-lg' : 'bg-white text-gray-400 border border-gray-50 hover:bg-gray-50' }}">Donations & Projects</a>
+    <a href="{{ route('admin.payments') }}" class="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest active:scale-95 transition-all {{ !$type ? 'bg-[var(--primary)] text-white shadow-lg shadow-purple-900/20' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50 hover:border-gray-300' }}">All Payments</a>
+    <a href="{{ route('admin.payments', ['type' => 'dues']) }}" class="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest active:scale-95 transition-all {{ $type == 'dues' ? 'bg-[var(--primary)] text-white shadow-lg shadow-purple-900/20' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50 hover:border-gray-300' }}">Membership Dues</a>
+    <a href="{{ route('admin.payments', ['type' => 'shop']) }}" class="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest active:scale-95 transition-all {{ $type == 'shop' ? 'bg-[var(--primary)] text-white shadow-lg shadow-purple-900/20' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50 hover:border-gray-300' }}">Shop Purchases</a>
+    <a href="{{ route('admin.payments', ['type' => 'donation']) }}" class="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest active:scale-95 transition-all {{ $type == 'donation' ? 'bg-[var(--primary)] text-white shadow-lg shadow-purple-900/20' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50 hover:border-gray-300' }}">Donations & Projects</a>
 </div>
 
 <div class="bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden">
@@ -58,7 +58,7 @@
             <h3 class="text-xl font-extrabold text-gray-800">{{ $type ? ucfirst($type) . ' Ledger' : 'Global Payment Ledger' }}</h3>
             <p class="text-gray-500 font-bold text-[10px] uppercase tracking-widest">Showing {{ $payments->total() }} recorded transactions.</p>
         </div>
-        <button class="bg-purple-50 text-purple-600 px-6 py-3 rounded-2xl text-xs font-black hover:bg-purple-100 transition-all flex items-center gap-2">
+        <button class="bg-purple-50 text-purple-600 border border-purple-100 hover:bg-purple-600 hover:text-white px-6 py-3 rounded-2xl text-xs font-black active:scale-95 transition-all flex items-center gap-2">
             <i class="fas fa-file-export"></i> Export CSV
         </button>
     </div>
@@ -70,9 +70,10 @@
                     <th class="px-8 py-5 text-left text-[10px] font-extrabold text-gray-400 uppercase tracking-[2px]">Transaction</th>
                     <th class="px-8 py-5 text-left text-[10px] font-extrabold text-gray-400 uppercase tracking-[2px]">Member</th>
                     <th class="px-8 py-5 text-left text-[10px] font-extrabold text-gray-400 uppercase tracking-[2px]">Amount</th>
-                    <th class="px-8 py-5 text-left text-[10px] font-extrabold text-gray-400 uppercase tracking-[2px]">Reference</th>
+                    <th class="px-8 py-5 text-left text-[10px] font-extrabold text-gray-400 uppercase tracking-[2px]">Method</th>
                     <th class="px-8 py-5 text-left text-[10px] font-extrabold text-gray-400 uppercase tracking-[2px]">Status</th>
                     <th class="px-8 py-5 text-left text-[10px] font-extrabold text-gray-400 uppercase tracking-[2px]">Date</th>
+                    <th class="px-8 py-5 text-right text-[10px] font-extrabold text-gray-400 uppercase tracking-[2px]">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
@@ -97,15 +98,26 @@
                         @endif
                     </td>
                     <td class="px-8 py-5 whitespace-nowrap">
-                        <div class="text-sm font-black text-primary">₦{{ number_format($payment->amount, 2) }}</div>
+                        <div class="text-sm font-black text-[var(--primary)]">₦{{ number_format($payment->amount, 2) }}</div>
                     </td>
                     <td class="px-8 py-5 whitespace-nowrap">
-                        <div class="text-[10px] font-black text-gray-400 font-mono tracking-tighter uppercase">{{ $payment->reference }}</div>
+                        <div class="text-xs font-bold text-gray-700 capitalize">{{ $payment->payment_method ?? 'gateway' }}</div>
+                        @if($payment->proof_of_payment)
+                            <a href="{{ asset($payment->proof_of_payment) }}" target="_blank" class="text-[9px] font-black text-secondary hover:underline flex items-center gap-1 mt-0.5">
+                                <i class="fas fa-file-invoice"></i> Proof of Pay
+                            </a>
+                        @endif
                     </td>
                     <td class="px-8 py-5 whitespace-nowrap">
                         @php
-                            $isSuccess = in_array(strtolower($payment->status), ['paid', 'success', 'successful', 'completed']);
-                            $color = $isSuccess ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100';
+                            $status = strtolower($payment->status);
+                            if (in_array($status, ['paid', 'success', 'successful', 'completed'])) {
+                                $color = 'bg-green-50 text-green-600 border-green-100';
+                            } elseif (in_array($status, ['pending'])) {
+                                $color = 'bg-amber-50 text-amber-600 border-amber-100';
+                            } else {
+                                $color = 'bg-red-50 text-red-600 border-red-100';
+                            }
                         @endphp
                         <span class="px-3 py-1 {{ $color }} text-[10px] font-black rounded-lg border uppercase tracking-tighter">
                             {{ $payment->status }}
@@ -115,6 +127,26 @@
                         <div class="text-[10px] font-bold text-gray-500 uppercase">{{ $payment->created_at->format('M d, Y') }}</div>
                         <div class="text-[9px] font-bold text-gray-300 uppercase">{{ $payment->created_at->format('h:i A') }}</div>
                     </td>
+                    <td class="px-8 py-5 whitespace-nowrap text-right text-xs font-bold">
+                        @if(strtolower($payment->status) == 'pending' && $payment->payment_method == 'manual')
+                            <div class="flex justify-end items-center gap-2.5">
+                                <form action="{{ route('admin.payments.approve', $payment) }}" method="POST" class="inline-block m-0">
+                                    @csrf
+                                    <button type="submit" class="inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white border border-emerald-200 hover:border-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider active:scale-95 transition-all cursor-pointer">
+                                        <i class="fa-solid fa-circle-check text-xs"></i> Approve
+                                    </button>
+                                </form>
+                                <form action="{{ route('admin.payments.reject', $payment) }}" method="POST" class="inline-block m-0">
+                                    @csrf
+                                    <button type="submit" class="inline-flex items-center gap-1.5 bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200 hover:border-rose-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider active:scale-95 transition-all cursor-pointer">
+                                        <i class="fa-solid fa-circle-xmark text-xs"></i> Reject
+                                    </button>
+                                </form>
+                            </div>
+                        @else
+                            <span class="text-gray-300 font-bold">-</span>
+                        @endif
+                    </td>
                 </tr>
                 @endforeach
             </tbody>
@@ -122,6 +154,44 @@
     </div>
     <div class="p-8 border-t border-gray-50 bg-gray-50 bg-opacity-30">
         {{ $payments->appends(request()->query())->links() }}
+    </div>
+</div>
+
+<div class="mt-12 bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden">
+    <div class="p-8 border-b border-gray-50 bg-gray-50 bg-opacity-30">
+        <h3 class="text-xl font-extrabold text-gray-800">Manual Payment Settings</h3>
+        <p class="text-gray-500 font-bold text-[10px] uppercase tracking-widest">Set bank details displayed to users when choosing Manual Bank Transfer.</p>
+    </div>
+    
+    <div class="p-8">
+        <form action="{{ route('admin.payments.settings') }}" method="POST" class="space-y-6 max-w-2xl">
+            @csrf
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Bank Name</label>
+                    <input type="text" name="bank_name" value="{{ $paymentSetting->bank_name ?? '' }}" class="w-full bg-gray-50 border-gray-100 rounded-2xl text-xs py-4 px-5 focus:ring-[var(--primary)] focus:border-[var(--primary)] font-bold text-gray-800" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Account Number</label>
+                    <input type="text" name="account_number" value="{{ $paymentSetting->account_number ?? '' }}" class="w-full bg-gray-50 border-gray-100 rounded-2xl text-xs py-4 px-5 focus:ring-[var(--primary)] focus:border-[var(--primary)] font-bold text-gray-800" required>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Account Name</label>
+                <input type="text" name="account_name" value="{{ $paymentSetting->account_name ?? '' }}" class="w-full bg-gray-50 border-gray-100 rounded-2xl text-xs py-4 px-5 focus:ring-[var(--primary)] focus:border-[var(--primary)] font-bold text-gray-800" required>
+            </div>
+            
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Instructions</label>
+                <textarea name="instructions" rows="4" class="w-full bg-gray-50 border-gray-100 rounded-2xl text-xs py-4 px-5 focus:ring-[var(--primary)] focus:border-[var(--primary)] font-medium text-gray-600" required>{{ $paymentSetting->instructions ?? '' }}</textarea>
+            </div>
+            
+            <div>
+                <button type="submit" class="bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-purple-900/20 active:scale-95 transition-all">Save Settings</button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection

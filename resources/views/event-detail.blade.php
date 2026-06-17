@@ -324,40 +324,145 @@
         @include('layouts.bottom-nav')
     </div>
 
+<!-- Event Payment Modal -->
+<div id="eventPaymentModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+   <div class="bg-white rounded-[32px] p-8 w-full max-w-md relative shadow-2xl">
+      <button onclick="closeEventModal()" class="absolute top-6 right-6 w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-full font-black text-gray-400"><i class="fa-solid fa-xmark"></i></button>
+      <h3 class="text-2xl font-black text-primary mb-8 tracking-tight">EVENT TICKET</h3>
+      
+      <!-- Screen 1: Payment Method Selection -->
+      <div id="paymentMethodScreen" class="space-y-4">
+         <h4 class="font-bold text-gray-800 text-sm mb-4">Choose how you want to pay:</h4>
+         
+         <button onclick="payOnline()" class="w-full bg-primary text-white p-5 rounded-3xl text-left hover:scale-[1.02] transition-transform flex items-center justify-between shadow-lg">
+             <div>
+                 <span class="font-black block text-sm">PAY ONLINE</span>
+                 <span class="text-xs text-white/70">Instant confirmation via Card/USSD</span>
+             </div>
+             <i class="fa-solid fa-credit-card text-lg"></i>
+         </button>
+
+         <button onclick="showManualPay()" class="w-full bg-white border border-gray-200 p-5 rounded-3xl text-left hover:shadow-md transition-all flex items-center justify-between">
+             <div>
+                 <span class="font-black block text-sm text-gray-800">BANK TRANSFER</span>
+                 <span class="text-xs text-gray-400">Manual verification by admin</span>
+             </div>
+             <i class="fa-solid fa-building-columns text-lg text-primary"></i>
+         </button>
+      </div>
+
+      <!-- Screen 2: Manual Payment Instructions & Upload -->
+      <div id="manualPayScreen" class="hidden space-y-4">
+         <button onclick="goBackToMethods()" class="text-xs font-bold text-gray-400 hover:text-gray-600 mb-2 flex items-center gap-1"><i class="fa-solid fa-arrow-left"></i> BACK</button>
+         <h4 class="font-black text-primary text-base">Bank Transfer Details</h4>
+         
+         <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100 text-xs space-y-2">
+             <div class="flex justify-between">
+                 <span class="text-gray-400 font-bold">BANK NAME:</span>
+                 <span class="text-gray-800 font-black">{{ $paymentSetting->bank_name ?? 'N/A' }}</span>
+             </div>
+             <div class="flex justify-between">
+                 <span class="text-gray-400 font-bold">ACCOUNT NAME:</span>
+                 <span class="text-gray-800 font-black">{{ $paymentSetting->account_name ?? 'N/A' }}</span>
+             </div>
+             <div class="flex justify-between">
+                 <span class="text-gray-400 font-bold">ACCOUNT NUMBER:</span>
+                 <span class="text-gray-800 font-black font-mono">{{ $paymentSetting->account_number ?? 'N/A' }}</span>
+             </div>
+             <div class="pt-2 border-t border-gray-200">
+                 <span class="text-gray-400 font-bold block mb-1">INSTRUCTIONS:</span>
+                 <p class="text-gray-600 font-medium leading-relaxed">{{ $paymentSetting->instructions ?? '' }}</p>
+             </div>
+         </div>
+
+         <form action="{{ route('payment.manual') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+             @csrf
+             <input type="hidden" name="amount" id="manualPayAmount">
+             <input type="hidden" name="description" id="manualPayDescription">
+             
+             <!-- Forward attendee details too -->
+             <input type="hidden" name="name" id="manualPayName">
+             <input type="hidden" name="email" id="manualPayEmail">
+             <input type="hidden" name="phone" id="manualPayPhone">
+             
+             <div>
+                 <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 font-bold">Upload Receipt (JPG, PNG, PDF)</label>
+                 <input type="file" name="proof_of_payment" class="w-full bg-gray-50 border border-gray-100 rounded-xl text-xs p-3 font-semibold" required>
+             </div>
+             
+             <button type="submit" class="w-full bg-primary text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg hover:brightness-110 active:scale-95 transition-all">Submit Proof of Payment</button>
+         </form>
+      </div>
+   </div>
+</div>
+
 <script src="https://checkout.flutterwave.com/v3.js"></script>
 <script>
     const fee = {{ $event->fee ?? 0 }};
+    let rsvpName = '';
+    let rsvpEmail = '';
+    let rsvpPhone = '';
+    
     if (fee > 0) {
         const rsvpForm = document.getElementById('rsvpForm');
         rsvpForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const name = rsvpForm.querySelector('input[name="name"]').value;
-            const email = rsvpForm.querySelector('input[name="email"]').value;
-            const phone = rsvpForm.querySelector('input[name="phone"]').value;
+            rsvpName = rsvpForm.querySelector('input[name="name"]').value;
+            rsvpEmail = rsvpForm.querySelector('input[name="email"]').value;
+            rsvpPhone = rsvpForm.querySelector('input[name="phone"]').value;
             
-            FlutterwaveCheckout({
-                public_key: "{{ config('services.flutterwave.public_key') }}",
-                tx_ref: "EVENT_RSVP_" + Date.now(),
-                amount: fee,
-                currency: "NGN",
-                customer: { email: email, name: name, phone_number: phone },
-                customizations: {
-                    title: "Event RSVP Ticket",
-                    description: "Payment for {{ $event->title }}"
-                },
-                callback: function(data) {
-                    const refInput = document.createElement('input');
-                    refInput.type = 'hidden';
-                    refInput.name = 'payment_reference';
-                    refInput.value = data.transaction_id || data.tx_ref;
-                    rsvpForm.appendChild(refInput);
-                    rsvpForm.submit();
-                },
-                onclose: function() {
-                    console.log("Payment modal closed");
-                }
-            });
+            // Open payment modal
+            document.getElementById('eventPaymentModal').classList.remove('hidden');
+        });
+    }
+
+    function closeEventModal() {
+        document.getElementById('eventPaymentModal').classList.add('hidden');
+        document.getElementById('paymentMethodScreen').classList.remove('hidden');
+        document.getElementById('manualPayScreen').classList.add('hidden');
+    }
+
+    function goBackToMethods() {
+        document.getElementById('manualPayScreen').classList.add('hidden');
+        document.getElementById('paymentMethodScreen').classList.remove('hidden');
+    }
+
+    function showManualPay() {
+        document.getElementById('manualPayAmount').value = fee;
+        document.getElementById('manualPayDescription').value = 'Event Ticket: {{ $event->title }}';
+        
+        document.getElementById('manualPayName').value = rsvpName;
+        document.getElementById('manualPayEmail').value = rsvpEmail;
+        document.getElementById('manualPayPhone').value = rsvpPhone;
+        
+        document.getElementById('paymentMethodScreen').classList.add('hidden');
+        document.getElementById('manualPayScreen').classList.remove('hidden');
+    }
+
+    function payOnline() {
+        FlutterwaveCheckout({
+            public_key: "{{ config('services.flutterwave.public_key') }}",
+            tx_ref: "EVENT_RSVP_" + Date.now(),
+            amount: fee,
+            currency: "NGN",
+            customer: { email: rsvpEmail, name: rsvpName, phone_number: rsvpPhone },
+            customizations: {
+                title: "Event RSVP Ticket",
+                description: "Payment for {{ $event->title }}"
+            },
+            callback: function(data) {
+                const rsvpForm = document.getElementById('rsvpForm');
+                const refInput = document.createElement('input');
+                refInput.type = 'hidden';
+                refInput.name = 'payment_reference';
+                refInput.value = data.transaction_id || data.tx_ref;
+                rsvpForm.appendChild(refInput);
+                rsvpForm.submit();
+            },
+            onclose: function() {
+                console.log("Payment modal closed");
+            }
         });
     }
 </script>

@@ -147,6 +147,9 @@
                             <option value="welfare" {{ $user->role == 'welfare' ? 'selected' : '' }}>Welfare Secretary</option>
                             <option value="pro" {{ $user->role == 'pro' ? 'selected' : '' }}>Public Relations Officer (PRO)</option>
                             <option value="pro_ii" {{ $user->role == 'pro_ii' ? 'selected' : '' }}>PRO II</option>
+                            @if(!in_array($user->role, ['user', 'admin', 'chairman', 'vice_chairman', 'secretary', 'legal', 'welfare', 'pro', 'pro_ii']))
+                                <option value="{{ $user->role }}" selected>{{ ucwords(str_replace('_', ' ', $user->role)) }} (Custom Role)</option>
+                            @endif
                         </select>
                     </div>
                     <div class="space-y-2">
@@ -165,12 +168,32 @@
             </div>
             
             <div class="flex flex-col sm:flex-row items-center gap-4 border-t border-gray-50 pt-10">
-                <button type="submit" class="w-full sm:w-auto bg-[var(--primary)] text-white py-4 px-12 rounded-2xl font-bold hover:bg-[var(--primary-dark)] transition-all shadow-lg shadow-purple-100 flex items-center justify-center gap-3">
+                <button type="submit" class="w-full sm:w-auto bg-[var(--primary)] text-white py-4 px-12 rounded-2xl font-bold hover:bg-[var(--primary-dark)] active:scale-95 transition-all shadow-lg shadow-purple-100 flex items-center justify-center gap-3">
                     <i class="fas fa-check-circle text-xs"></i> Update Member Record
                 </button>
+                @if($user->id !== auth()->id())
+                <button type="button" onclick="confirmDelete()" class="w-full sm:w-auto bg-red-600 text-white py-4 px-12 rounded-2xl font-bold hover:bg-red-700 active:scale-95 transition-all shadow-lg shadow-red-100 flex items-center justify-center gap-3 md:ml-auto">
+                    <i class="fas fa-trash-alt text-xs"></i> Delete Account
+                </button>
+                @endif
                 <a href="{{ $user->role === 'user' ? route('admin.users') : route('admin.executives') }}" class="w-full sm:w-auto text-center text-gray-400 font-bold hover:text-gray-600 transition-colors py-3 px-6">Discard Changes</a>
             </div>
         </form>
     </div>
 </div>
+
+@if($user->id !== auth()->id())
+<form id="deleteUserForm" action="{{ route('admin.users.delete', $user) }}" method="POST" class="hidden">
+    @csrf
+    @method('DELETE')
+</form>
+
+<script>
+    function confirmDelete() {
+        if (confirm('Are you absolutely sure you want to delete this user? This action is permanent and cannot be undone.')) {
+            document.getElementById('deleteUserForm').submit();
+        }
+    }
+</script>
+@endif
 @endsection

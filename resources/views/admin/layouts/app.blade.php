@@ -21,6 +21,29 @@
         .nav-link.active { background: rgba(255, 255, 255, 0.1); border-left: 4px solid var(--secondary); color: var(--secondary); }
         .nav-link:hover:not(.active) { background: rgba(255, 255, 255, 0.05); transform: translateX(5px); }
         .card { border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
+
+        @media (min-width: 768px) {
+            #adminSidebar {
+                transform: translateX(0);
+            }
+            #adminSidebar.collapsed {
+                transform: translateX(-100%);
+            }
+            #mainContent {
+                padding-left: 16rem;
+            }
+            #mainContent.expanded {
+                padding-left: 0;
+            }
+        }
+        @media (max-width: 767px) {
+            #adminSidebar {
+                transform: translateX(-100%);
+            }
+            #adminSidebar.open {
+                transform: translateX(0);
+            }
+        }
     </style>
     @yield('extra_css')
 </head>
@@ -30,7 +53,7 @@
         <div id="sidebarBackdrop" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity duration-300"></div>
 
         <!-- Sidebar -->
-        <aside id="adminSidebar" class="sidebar w-64 fixed inset-y-0 left-0 transform -translate-x-full md:translate-x-0 md:relative transition-transform duration-300 ease-in-out flex flex-col flex-shrink-0 text-white shadow-2xl z-50">
+        <aside id="adminSidebar" class="sidebar w-64 fixed inset-y-0 left-0 transform transition-transform duration-300 ease-in-out flex flex-col flex-shrink-0 text-white shadow-2xl z-50">
             <div class="p-8 flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('images/uniben-logo.png') }}" class="w-10 h-10 bg-white rounded-lg p-1 shadow-lg" alt="Logo">
@@ -39,7 +62,7 @@
                         <p class="text-[10px] uppercase tracking-widest text-purple-300 font-bold opacity-70">Lagos Branch</p>
                     </div>
                 </div>
-                <button id="sidebarClose" class="md:hidden text-white hover:text-[var(--secondary)] text-xl focus:outline-none" aria-label="Close sidebar">
+                <button id="sidebarClose" class="text-white hover:text-[var(--secondary)] text-xl focus:outline-none transition-transform hover:rotate-90 duration-200" aria-label="Close sidebar">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -138,11 +161,11 @@
         </aside>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden bg-[var(--bg-body)]">
+        <div id="mainContent" class="flex-1 flex flex-col overflow-hidden bg-[var(--bg-body)] transition-all duration-300">
             <!-- Header -->
             <header class="bg-white h-20 flex items-center justify-between px-4 md:px-8 border-b border-gray-200">
                 <div class="flex items-center gap-4">
-                    <button id="sidebarToggle" class="md:hidden text-[var(--primary)] text-2xl focus:outline-none" aria-label="Open menu">
+                    <button id="sidebarToggle" class="text-[var(--primary)] text-2xl focus:outline-none hover:scale-105 active:scale-95 transition-all" aria-label="Toggle menu">
                         <i class="fas fa-bars"></i>
                     </button>
                     <h2 class="text-lg md:text-xl font-bold text-gray-800">@yield('title', 'Admin Overview')</h2>
@@ -192,20 +215,33 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const sidebar = document.getElementById('adminSidebar');
+        const mainContent = document.getElementById('mainContent');
         const backdrop = document.getElementById('sidebarBackdrop');
         const toggleBtn = document.getElementById('sidebarToggle');
         const closeBtn = document.getElementById('sidebarClose');
 
         function toggleSidebar() {
-            const isOpen = !sidebar.classList.contains('-translate-x-full');
-            if (isOpen) {
-                sidebar.classList.add('-translate-x-full');
-                backdrop.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
+            const isMobile = window.innerWidth < 768;
+            if (isMobile) {
+                const isOpen = sidebar.classList.contains('open');
+                if (isOpen) {
+                    sidebar.classList.remove('open');
+                    backdrop.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                } else {
+                    sidebar.classList.add('open');
+                    backdrop.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                }
             } else {
-                sidebar.classList.remove('-translate-x-full');
-                backdrop.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
+                const isCollapsed = sidebar.classList.contains('collapsed');
+                if (isCollapsed) {
+                    sidebar.classList.remove('collapsed');
+                    mainContent.classList.remove('expanded');
+                } else {
+                    sidebar.classList.add('collapsed');
+                    mainContent.classList.add('expanded');
+                }
             }
         }
 
@@ -213,10 +249,24 @@
             toggleBtn.addEventListener('click', toggleSidebar);
         }
         if (backdrop) {
-            backdrop.addEventListener('click', toggleSidebar);
+            backdrop.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                backdrop.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            });
         }
         if (closeBtn) {
-            closeBtn.addEventListener('click', toggleSidebar);
+            closeBtn.addEventListener('click', function() {
+                const isMobile = window.innerWidth < 768;
+                if (isMobile) {
+                    sidebar.classList.remove('open');
+                    backdrop.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                } else {
+                    sidebar.classList.add('collapsed');
+                    mainContent.classList.add('expanded');
+                }
+            });
         }
     });
 </script>

@@ -163,6 +163,16 @@
     $alumniLevel = $user->calculateAlumniLevel();
     $isOwnProfile = auth()->id() === $user->id;
 
+    $iRequested = null;
+    $theyRequested = null;
+    $isConnected = false;
+
+    if (!$isOwnProfile) {
+        $iRequested = \App\Models\Connection::where('user_id', auth()->id())->where('connected_user_id', $user->id)->first();
+        $theyRequested = \App\Models\Connection::where('user_id', $user->id)->where('connected_user_id', auth()->id())->first();
+        $isConnected = ($iRequested && $iRequested->status === 'accepted') || ($theyRequested && $theyRequested->status === 'accepted');
+    }
+
     $isBirthday = false;
     if ($user->date_of_birth) {
         $dob = \Carbon\Carbon::parse($user->date_of_birth);
@@ -225,7 +235,20 @@
                         @if($isOwnProfile)
                         <a href="{{ route('profile.edit') }}" class="bg-primary text-white px-8 py-3 rounded-xl font-bold text-xs shadow-lg shadow-primary/10 hover:brightness-110 active:scale-95 transition-all uppercase tracking-widest">EDIT PERSONAL INFO</a>
                         @else
-                        <a href="mailto:{{ $user->email }}" class="bg-primary text-white px-8 py-3 rounded-xl font-bold text-xs shadow-lg shadow-primary/10 hover:brightness-110 active:scale-95 transition-all uppercase tracking-widest">SEND MESSAGE</a>
+                        <form action="{{ route('directory.connect') }}" method="POST" class="inline-block">
+                            @csrf
+                            <input type="hidden" name="user_id" value="{{ $user->id }}">
+                            @if($isConnected)
+                                 <button type="button" class="bg-gray-100 text-gray-400 px-8 py-3 rounded-xl font-bold text-xs cursor-default uppercase tracking-widest">CONNECTED</button>
+                            @elseif($iRequested)
+                                 <button type="button" class="bg-secondary/10 text-secondary px-8 py-3 rounded-xl font-bold text-xs cursor-default uppercase tracking-widest">PENDING REQUEST</button>
+                            @elseif($theyRequested)
+                                 <button type="submit" class="bg-secondary text-primary px-8 py-3 rounded-xl font-bold text-xs hover:brightness-110 active:scale-95 transition-all shadow-lg uppercase tracking-widest">ACCEPT CONNECTION</button>
+                            @else
+                                 <button type="submit" class="bg-primary text-white px-8 py-3 rounded-xl font-bold text-xs hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/10 uppercase tracking-widest">CONNECT</button>
+                            @endif
+                        </form>
+                        <a href="mailto:{{ $user->email }}" class="bg-gray-50 text-primary border border-gray-100 px-8 py-3 rounded-xl font-bold text-xs hover:bg-primary hover:text-white active:scale-95 transition-all uppercase tracking-widest">SEND MESSAGE</a>
                         @endif
                         <button onclick="shareIdentity()" class="bg-gray-50 text-gray-400 px-8 py-3 rounded-xl font-bold text-xs border border-gray-100 hover:bg-gray-100 active:scale-95 transition-all uppercase tracking-widest">SHARE IDENTITY</button>
                     </div>
@@ -262,6 +285,23 @@
                         {{ $user->bio ?: 'No professional summary provided. Sharing your journey helps in mentorship and branch networking.' }}
                     </p>
                 </section>
+
+                @if($user->degrees && $user->degrees->count() > 0)
+                <section class="bg-white p-8 rounded-[32px] border border-gray-50 shadow-sm">
+                    <h3 class="text-xl font-bold text-primary mb-6 flex items-center gap-3">
+                        <i class="fa-solid fa-graduation-cap text-secondary text-sm"></i>
+                        Education & Degrees
+                    </h3>
+                    <div class="space-y-6">
+                        @foreach($user->degrees as $deg)
+                        <div class="border-l-4 border-secondary pl-4 py-1">
+                            <h4 class="font-bold text-gray-800 text-sm">{{ $deg->degree_type }} in {{ $deg->course }}</h4>
+                            <p class="text-xs text-gray-500 font-medium">{{ $deg->department }} • Class of {{ $deg->graduation_year }}</p>
+                        </div>
+                        @endforeach
+                    </div>
+                </section>
+                @endif
 
                 <section class="bg-white p-8 rounded-[32px] border border-gray-50 shadow-sm">
                     <h3 class="text-xl font-bold text-primary mb-6">Contact & Socials</h3>
@@ -329,6 +369,7 @@
 
             <!-- Side Settings Pane -->
             <div class="space-y-10">
+                @if($isOwnProfile)
                 <section class="bg-primary p-8 rounded-[32px] text-white overflow-hidden relative">
                     <h3 class="text-xl font-bold mb-6 relative z-10">Account Power</h3>
                     <div class="space-y-4 relative z-10">
@@ -354,6 +395,32 @@
                     </a>
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">@csrf</form>
                 </section>
+                @else
+                <section class="bg-primary p-8 rounded-[32px] text-white overflow-hidden relative">
+                    <h3 class="text-xl font-bold mb-6 relative z-10">Networking</h3>
+                    <div class="space-y-4 relative z-10 text-sm">
+                        <div class="p-4 bg-white/10 rounded-2xl border border-white/10">
+                            <span class="text-[10px] font-bold text-secondary uppercase tracking-widest block mb-1">Status</span>
+                            <span class="font-bold">
+                                @if($isConnected)
+                                    Connected
+                                @elseif($iRequested)
+                                    Request Pending
+                                @elseif($theyRequested)
+                                    Received Request
+                                @else
+                                    Not Connected
+                                @endif
+                            </span>
+                        </div>
+                        <div class="p-4 bg-white/10 rounded-2xl border border-white/10">
+                            <span class="text-[10px] font-bold text-secondary uppercase tracking-widest block mb-1">Member Rank</span>
+                            <span class="font-bold">{{ $alumniLevel }}</span>
+                        </div>
+                    </div>
+                    <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-white/5 rounded-full blur-xl"></div>
+                </section>
+                @endif
             </div>
         </div>
     </main>

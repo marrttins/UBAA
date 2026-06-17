@@ -9,8 +9,8 @@
         <p class="text-gray-500 font-medium text-sm">Manage administrative accounts and roles for the branch.</p>
     </div>
     <div class="flex gap-3">
-        <a href="{{ route('admin.executives.create') }}" class="bg-[var(--primary)] text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-purple-100 hover:bg-[var(--primary-dark)] transition-all flex items-center gap-2">
-            <i class="fas fa-plus-circle text-xs"></i> Add New Executive
+        <a href="{{ route('admin.executives.create') }}" class="bg-[var(--primary)] text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-purple-100 hover:bg-[var(--primary-dark)] active:scale-95 transition-all flex items-center gap-2">
+            <i class="fas fa-plus-circle text-xs"></i> Add Executive Role
         </a>
     </div>
 </div>
@@ -60,12 +60,13 @@
                                 'pro' => 'PRO',
                                 'pro_ii' => 'PRO II'
                             ];
+                            $roleLabel = $roleNames[$user->role] ?? ucwords(str_replace('_', ' ', $user->role));
                         @endphp
                         <span class="px-4 py-1.5 inline-flex text-[10px] leading-5 font-extrabold rounded-full border 
                             @if($user->role == 'admin' || $user->role == 'chairman') bg-purple-50 text-[var(--primary)] border-purple-100
                             @elseif(in_array($user->role, ['secretary', 'pro'])) bg-yellow-50 text-[var(--secondary)] border-yellow-100
                             @else bg-green-50 text-green-600 border-green-100 @endif uppercase tracking-wider">
-                            {{ $roleNames[$user->role] ?? $user->role }}
+                            {{ $roleLabel }}
                         </span>
                     </td>
                     <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-500 font-medium">

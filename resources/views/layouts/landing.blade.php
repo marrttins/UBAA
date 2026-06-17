@@ -352,7 +352,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            &copy; {{ date('Y') }} University of Benin Alumni Association, Lagos Branch.
+            &copy; {{ date('Y') }} University of Benin Alumni Association, Lagos Branch. | Built with <i class="fa-solid fa-heart" style="color: #e25555;"></i> by <a href="https://malvnet.com" target="_blank" style="color: var(--secondary); font-weight: 600;">MalvNET</a>
         </div>
     </div>
 </footer>

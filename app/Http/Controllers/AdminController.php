@@ -187,35 +187,36 @@ class AdminController extends Controller
 
     public function executives()
     {
-        $users = User::whereIn('role', ['chairman', 'secretary', 'pro', 'admin'])->latest()->paginate(15);
+        $users = User::where('role', '!=', 'user')->latest()->paginate(15);
         return view('admin.executives.index', compact('users'));
     }
 
     public function createExecutive()
     {
-        return view('admin.executives.create');
+        $regularUsers = User::where('role', 'user')->orderBy('name')->get();
+        return view('admin.executives.create', compact('regularUsers'));
     }
 
     public function storeExecutive(Request $request)
     {
         $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8|confirmed',
-            'role' => 'required|in:admin,chairman,vice_chairman,secretary,legal,welfare,pro,pro_ii',
+            'user_id' => 'required|exists:users,id',
+            'role' => 'required|string',
+            'custom_role' => 'required_if:role,custom|nullable|string|min:3|max:255',
         ]);
 
-        User::create([
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'name' => $request->first_name . ' ' . $request->last_name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
+        $user = User::findOrFail($request->user_id);
+        
+        $role = $request->role;
+        if ($role === 'custom') {
+            $role = \Illuminate\Support\Str::slug($request->custom_role, '_');
+        }
+
+        $user->update([
+            'role' => $role,
         ]);
 
-        return redirect()->route('admin.executives')->with('success', 'Executive created successfully');
+        return redirect()->route('admin.executives')->with('success', 'Executive role assigned successfully');
     }
 
     public function editUser(User $user)
@@ -229,7 +230,7 @@ class AdminController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,'.$user->id,
-            'role' => 'required|in:user,admin,chairman,vice_chairman,secretary,legal,welfare,pro,pro_ii',
+            'role' => 'required|string|max:255',
             'title' => 'nullable|string|max:20',
             'middle_name' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
@@ -256,6 +257,17 @@ class AdminController extends Controller
 
         $redirectRoute = $user->role === 'user' ? 'admin.users' : 'admin.executives';
         return redirect()->route($redirectRoute)->with('success', 'User details updated successfully');
+    }
+
+    public function deleteUser(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return redirect()->back()->withErrors(['error' => 'You cannot delete your own account.']);
+        }
+        
+        $user->delete();
+        
+        return redirect()->route('admin.users')->with('success', 'User account deleted successfully.');
     }
 
     public function events()
@@ -619,7 +631,9 @@ class AdminController extends Controller
                   ->orWhere('description', 'like', '%Project%');
             })->sum('amount');
 
-        return view('admin.payments.index', compact('payments', 'totalRevenue', 'duesRevenue', 'shopRevenue', 'donationRevenue', 'type'));
+        $paymentSetting = \App\Models\PaymentSetting::first();
+
+        return view('admin.payments.index', compact('payments', 'totalRevenue', 'duesRevenue', 'shopRevenue', 'donationRevenue', 'type', 'paymentSetting'));
     }
 
     public function donationProjects()
@@ -776,5 +790,96 @@ class AdminController extends Controller
         $setting->update(['gallery_images' => $images]);
 
         return redirect()->route('admin.cooperative')->with('success', 'Gallery image removed.');
+    }
+
+    public function updatePaymentSettings(Request $request)
+    {
+        $data = $request->validate([
+            'bank_name' => 'required|string|max:255',
+            'account_number' => 'required|string|max:255',
+            'account_name' => 'required|string|max:255',
+            'instructions' => 'required|string',
+        ]);
+
+        $setting = \App\Models\PaymentSetting::first() ?? new \App\Models\PaymentSetting();
+        $setting->fill($data)->save();
+
+        return back()->with('success', 'Manual payment settings updated successfully.');
+    }
+
+    public function approvePayment(Payment $payment)
+    {
+        $payment->update(['status' => 'Paid']);
+
+        // Check if this payment corresponds to an Event Reservation
+        if (str_starts_with($payment->description, 'Event Ticket:')) {
+            $eventTitle = str_replace('Event Ticket: ', '', $payment->description);
+            $event = \App\Models\Event::where('title', $eventTitle)->first();
+            if ($event) {
+                $reservation = \App\Models\EventReservation::where('event_id', $event->id)
+                    ->where('user_id', $payment->user_id)
+                    ->first();
+                if ($reservation) {
+                    $reservation->update(['status' => 'confirmed']);
+                    // Send confirmation mail
+                    try {
+                        Mail::to($reservation->email)->send(new \App\Mail\EventReservationMail($reservation, $event));
+                    } catch (\Exception $e) {
+                        // Log mail exception if any
+                    }
+                }
+            }
+        }
+
+        // Check if this payment corresponds to a Shop Order
+        if (str_starts_with($payment->description, 'Shop Purchase:')) {
+            $order = \App\Models\Order::where('reference', $payment->reference)->first();
+            if ($order) {
+                $order->update(['status' => 'completed']);
+            }
+        }
+
+        // Check if this payment corresponds to a Donation
+        if (str_contains(strtolower($payment->description), 'donation') || str_contains(strtolower($payment->description), 'project')) {
+            $parts = explode(':', $payment->description);
+            if (count($parts) > 1) {
+                $projectTitle = trim($parts[1]);
+                $project = \App\Models\DonationProject::where('title', $projectTitle)->first();
+                if ($project) {
+                    $project->increment('raised_amount', $payment->amount);
+                }
+            }
+        }
+
+        return back()->with('success', 'Payment verified and approved successfully.');
+    }
+
+    public function rejectPayment(Payment $payment)
+    {
+        $payment->update(['status' => 'Failed']);
+
+        // Also update corresponding Event Reservation if applicable
+        if (str_starts_with($payment->description, 'Event Ticket:')) {
+            $eventTitle = str_replace('Event Ticket: ', '', $payment->description);
+            $event = \App\Models\Event::where('title', $eventTitle)->first();
+            if ($event) {
+                $reservation = \App\Models\EventReservation::where('event_id', $event->id)
+                    ->where('user_id', $payment->user_id)
+                    ->first();
+                if ($reservation) {
+                    $reservation->update(['status' => 'rejected']);
+                }
+            }
+        }
+
+        // Also update corresponding Order if applicable
+        if (str_starts_with($payment->description, 'Shop Purchase:')) {
+            $order = \App\Models\Order::where('reference', $payment->reference)->first();
+            if ($order) {
+                $order->update(['status' => 'cancelled']);
+            }
+        }
+
+        return back()->with('success', 'Payment rejected successfully.');
     }
 }
