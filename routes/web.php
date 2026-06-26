@@ -225,6 +225,38 @@ Route::middleware('auth')->group(function () {
     })->name('events');
 
     Route::get('/directory', function (\Illuminate\Http\Request $request) {
+        // Send email to all other members if any member is celebrating a birthday today
+        $isSqlite = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'sqlite';
+        $todayCelebrants = \App\Models\User::whereNotNull('date_of_birth')
+            ->when($isSqlite, function ($q) {
+                return $q->whereRaw("strftime('%m-%d', date_of_birth) = ?", [now()->format('m-d')]);
+            }, function ($q) {
+                return $q->whereRaw("DATE_FORMAT(date_of_birth, '%m-%d') = ?", [now()->format('m-d')]);
+            })
+            ->get();
+
+        foreach ($todayCelebrants as $celebrant) {
+            $currentYear = date('Y');
+            $cacheKey = "birthday_notification_sent_{$celebrant->id}_{$currentYear}";
+
+            if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+                // Get all other members (excluding the celebrant)
+                $otherMembers = \App\Models\User::where('id', '!=', $celebrant->id)->get();
+
+                foreach ($otherMembers as $recipient) {
+                    try {
+                        \Illuminate\Support\Facades\Mail::to($recipient->email)
+                            ->send(new \App\Mail\MemberBirthdayNotificationMail($celebrant, $recipient));
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::error("Failed to send birthday notification email to {$recipient->email} for celebrant {$celebrant->name}: " . $e->getMessage());
+                    }
+                }
+
+                // Mark as sent in cache for the current year
+                \Illuminate\Support\Facades\Cache::forever($cacheKey, true);
+            }
+        }
+
         $query = \App\Models\User::where('id', '!=', auth()->id());
         
         if ($request->has('search') && !empty($request->search)) {
@@ -252,7 +284,7 @@ Route::middleware('auth')->group(function () {
         $myConnections = \App\Models\Connection::where('user_id', auth()->id())->get()->keyBy('connected_user_id');
         $theirConnections = \App\Models\Connection::where('connected_user_id', auth()->id())->get()->keyBy('user_id');
 
-        return view('directory', compact('users', 'isFullyPaid', 'myConnections', 'theirConnections', 'request'));
+        return view('directory', compact('users', 'isFullyPaid', 'myConnections', 'theirConnections', 'request', 'todayCelebrants'));
     })->name('directory');
 
     Route::post('/directory/connect', function (\Illuminate\Http\Request $request) {

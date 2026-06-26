@@ -196,6 +196,44 @@
             <button class="bg-white border text-gray-500 px-5 py-2 rounded-full text-xs font-semibold whitespace-nowrap">Law</button>
         </div>
 
+        @if(isset($todayCelebrants) && $todayCelebrants->isNotEmpty())
+        <!-- Birthday Celebrants Showcase -->
+        <section class="mb-10 bg-gradient-to-r from-primary to-purple-950 text-white p-6 md:p-8 rounded-[32px] shadow-lg relative overflow-hidden border-2 border-secondary/20">
+            <div class="absolute top-0 right-0 -translate-y-6 translate-x-6 w-48 h-48 bg-secondary/10 rounded-full blur-xl pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 translate-y-6 -translate-x-6 w-32 h-32 bg-primary/20 rounded-full blur-lg pointer-events-none"></div>
+            
+            <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div class="max-w-xl">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-secondary text-primary uppercase tracking-widest mb-3">
+                        🎂 Birthday Celebration
+                    </span>
+                    <h2 class="text-2xl md:text-3xl font-black font-headline tracking-tight mb-2">
+                        Celebrating Our Own Today!
+                    </h2>
+                    <p class="text-white/80 text-sm font-medium">
+                        Join us in wishing our distinguished alumni a very happy birthday. Let's celebrate them and make their day special!
+                    </p>
+                </div>
+                
+                <div class="flex flex-wrap gap-4 items-center">
+                    @foreach($todayCelebrants as $celebrant)
+                    <div class="bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/15 rounded-2xl p-3 flex items-center gap-3 transition-all hover:scale-[1.02]">
+                        <img src="{{ asset($celebrant->avatar_url ?? 'https://ui-avatars.com/api/?name='.urlencode($celebrant->name).'&background=4A0E4E&color=fff') }}" 
+                             class="w-12 h-12 rounded-xl object-cover border border-secondary/40">
+                        <div class="min-w-[120px]">
+                            <h4 class="font-bold text-sm text-white truncate max-w-[140px]">{{ $celebrant->name }}</h4>
+                            <p class="text-[10px] font-black text-secondary uppercase tracking-wider truncate max-w-[140px]">'{{ substr($celebrant->graduation_year ?? 'N/A', -2) }} • {{ $celebrant->degree ?? 'Alumnus' }}</p>
+                        </div>
+                        <a href="{{ route('profile.show', $celebrant->id) }}" class="w-8 h-8 bg-secondary text-primary rounded-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all" title="View Profile">
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+        @endif
+
         <!-- Directory Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             @foreach($users as $user)
