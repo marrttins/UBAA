@@ -26,7 +26,7 @@ class SignupOtpMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '🔑 Verification Code: ' . $this->otp . ' | UBAA Lagos',
+            subject: 'Verify Your Email Address | UBAA Lagos',
         );
     }
 

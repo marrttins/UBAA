@@ -26,7 +26,7 @@ class ForgotPasswordOtpMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '🔑 Password Reset Code: ' . $this->otp . ' | UBAA Lagos',
+            subject: 'Reset Your Password | UBAA Lagos',
         );
     }
 

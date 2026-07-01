@@ -22,7 +22,7 @@ class BirthdayGreetingMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '🎂 Happy Birthday ' . $this->celebrant->first_name . '! | UBAA Lagos',
+            subject: 'Happy Birthday ' . $this->celebrant->first_name . '! | UBAA Lagos',
         );
     }
 

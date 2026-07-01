@@ -28,7 +28,7 @@ class LoginNotificationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '🔒 Security Alert: New Login Detected | UBAA Lagos',
+            subject: 'Security Alert: New Login Detected | UBAA Lagos',
         );
     }
 

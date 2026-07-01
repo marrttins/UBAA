@@ -97,6 +97,7 @@ class AuthController extends Controller
             );
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Signup OTP email failed: ' . $e->getMessage());
+            return back()->withInput()->withErrors(['email' => 'We encountered an error while sending the verification code. Please check that your email address is correct and try again.']);
         }
 
         return redirect()->route('signup.verify');
@@ -198,6 +199,7 @@ class AuthController extends Controller
             );
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Forgot password OTP email failed: ' . $e->getMessage());
+            return back()->withInput()->withErrors(['email' => 'We encountered an error while sending the verification code. Please try again.']);
         }
 
         return redirect()->route('forgot.password.verify')->with('success', 'A verification code has been sent to your email.');

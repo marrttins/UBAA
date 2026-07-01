@@ -31,7 +31,7 @@ class MemberBirthdayNotificationMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '🎉 Join us in celebrating ' . $this->celebrant->name . '\'s birthday today! | UBAA Lagos',
+            subject: 'Join us in celebrating ' . $this->celebrant->name . '\'s birthday today! | UBAA Lagos',
         );
     }
 
